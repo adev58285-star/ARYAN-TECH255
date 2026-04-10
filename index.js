@@ -1,5 +1,5 @@
 /**
- * Pretty md Bot - A WhatsApp Bot
+ * ∆RY∆N-TECH Bot - A WhatsApp Bot
  * © 2025 superstar 
  * * NOTE: This is the combined codebase. It handles cloning the core code from 
  * * the hidden repo on every startup while ensuring persistence files (session and settings) 
@@ -205,20 +205,20 @@ function cleanupJunkFiles(botSocket) {
     });
 }
 
-// --- PRETTY MD ORIGINAL CODE START ---
+// --- ∆RY∆N-TECH ORIGINAL CODE START ---
 global.botname = "∆RY∆N-TECH"
 global.themeemoji = "•"
 const pairingCode = !!global.phoneNumber || process.argv.includes("--pairing-code")
 const useMobile = process.argv.includes("--mobile")
 
-// --- Readline setup (PRETTY MD) ---
+// --- Readline setup (∆RY∆N-TECH) ---
 const rl = process.stdin.isTTY ? readline.createInterface({ input: process.stdin, output: process.stdout }) : null
 // The question function will use the 'settings' variable, but it's called inside getLoginMethod, which is 
 // called after the clone, so we keep this definition but ensure 'settings' is available when called.
 const question = (text) => rl ? new Promise(resolve => rl.question(text, resolve)) : Promise.resolve(settings?.ownerNumber || global.phoneNumber)
 
 /*━━━━━━━━━━━━━━━━━━━━*/
-// --- Paths (PRETTY MD) ---
+// --- Paths (∆RY∆N-TECH) ---
 /*━━━━━━━━━━━━━━━━━━━━*/
 const sessionDir = path.join(__dirname, 'session')
 const credsPath = path.join(sessionDir, 'creds.json')
@@ -227,7 +227,7 @@ const envPath = path.join(process.cwd(), '.env');
 //const envPath = path.join(__dirname, '.env') // Path to the .env file
 
 /*━━━━━━━━━━━━━━━━━━━━*/
-// --- Login persistence (PRETTY MD) ---
+// --- Login persistence (∆RY∆N-TECH) ---
 /*━━━━━━━━━━━━━━━━━━━━*/
 
 async function saveLoginMethod(method) {
@@ -243,7 +243,7 @@ async function getLastLoginMethod() {
     return null;
 }
 
-// --- Session check (PRETTY MD) ---
+// --- Session check (∆RY∆N-TECH) ---
 function sessionExists() {
     return fs.existsSync(credsPath);
 }
@@ -300,7 +300,7 @@ async function checkAndHandleSessionFormat() {
 }
 
 
-// --- Get login method (PRETTY MD) ---
+// --- Get login method (∆RY∆N-TECH) ---
 async function getLoginMethod() {
     const lastMethod = await getLastLoginMethod();
     if (lastMethod && sessionExists()) {
@@ -354,7 +354,7 @@ async function getLoginMethod() {
     }
 }
 
-// --- Download session (PRETTY MD) ---
+// --- Download session (∆RY∆N-TECH) ---
 async function downloadSessionData() {
     try {
         await fs.promises.mkdir(sessionDir, { recursive: true });
@@ -368,7 +368,7 @@ async function downloadSessionData() {
     } catch (err) { log(`Error downloading session data: ${err.message}`, 'red', true); }
 }
 
-// --- Request pairing code (PRETTY MD) ---
+// --- Request pairing code (∆RY∆N-TECH) ---
 async function requestPairingCode(socket) {
     try {
         log("Waiting 3 seconds for socket stabilization before requesting pairing code...", 'yellow');
@@ -512,7 +512,7 @@ async function handle408Error(statusCode) {
 }
 
 
-// --- Start bot (PRETTY MD) ---
+// --- Start bot (∆RY∆N-TECH) ---
 async function startXhypherBot() {
     log('Connecting to WhatsApp...', 'cyan');
     const { version } = await fetchLatestBaileysVersion();
@@ -560,7 +560,7 @@ async function startXhypherBot() {
               if (!global.messageBackup[chatId][messageId]) { global.messageBackup[chatId][messageId] = savedMessage; saveStoredMessages(global.messageBackup); }
         }
 
-        // --- PRETTY MD ORIGINAL HANDLER ---
+        // --- ∆RY∆N-TECH ORIGINAL HANDLER ---
         const mek = chatUpdate.messages[0];
         if (!mek.message) return;
         mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message;
@@ -839,7 +839,7 @@ async function tylor() {
     checkEnvStatus(); // <--- START .env FILE WATCHER (Mandatory)
 }
 
-// --- Start bot (PRETTY MD) ---
+// --- Start bot (∆RY∆N-TECH) ---
 tylor().catch(err => log(`Fatal error starting bot: ${err.message}`, 'blue', true));
 process.on('uncaughtException', (err) => log(`Uncaught Exception: ${err.message}`, 'red', true));
 process.on('unhandledRejection', (err) => log(`Unhandled Rejection: ${err.message}`, 'red', true));
