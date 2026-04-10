@@ -7,6 +7,7 @@ const { getBotName } = require('./setbot');
 async function pingCommand(sock, chatId, message) {
     try {
     let newBot = getBotName();
+    console.log(`[ ∆RY∆N-TECH ] 🏓 pingCommand executing for chatId: ${chatId}`);
     
     const start = Date.now();
     const sentMsg = await sock.sendMessage(chatId, {

@@ -9,6 +9,9 @@ process.stdout.write = function (chunk, encoding, callback) {
     if (message.includes('Closing session: SessionEntry') || message.includes('SessionEntry {')) {
         return;
     }
+    if (message.includes('Bad MAC') || message.includes('Session error:') || message.includes('Failed to decrypt message')) {
+        return;
+    }
 
     return originalWrite.apply(this, arguments);
 };
@@ -17,6 +20,9 @@ const originalWriteError = process.stderr.write;
 process.stderr.write = function (chunk, encoding, callback) {
     const message = chunk.toString();
     if (message.includes('Closing session: SessionEntry')) {
+        return;
+    }
+    if (message.includes('Bad MAC') || message.includes('Session error')) {
         return;
     }
     return originalWriteError.apply(this, arguments);
@@ -30,6 +36,15 @@ console.log = function (message, ...optionalParams) {
     }
     
     originalLog.apply(console, [message, ...optionalParams]);
+};
+
+const originalConsoleError = console.error;
+console.error = function (message, ...optionalParams) {
+    const msg = typeof message === 'string' ? message : String(message);
+    if (msg.includes('Bad MAC') || msg.includes('Session error') || msg.includes('Failed to decrypt')) {
+        return;
+    }
+    originalConsoleError.apply(console, [message, ...optionalParams]);
 };
 
 //this code is to avoid preKeyCount bound coded by superstar
