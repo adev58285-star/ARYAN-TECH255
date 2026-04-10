@@ -7,7 +7,7 @@ async function connectCommand(sock, chatId, senderId, message, rawMessage, prefi
         return await sock.sendMessage(chatId, {
             text: `🚀 *Quick Bot Deployment*\n\n` +
                   `*Usage:* ${prefix}connect <session_id>\n\n` +
-                  `*Example:*\n${prefix}connect TECHWORLD:~eyJub2lzZUt...\n\n` +
+                  `*Example:*\n${prefix}connect TRUTH-MD:~eyJub2lzZUt...\n\n` +
                   `💡 Get your session ID from your existing bot or WhatsApp Web session.`
         }, { quoted: message });
     }
@@ -48,9 +48,9 @@ async function connectCommand(sock, chatId, senderId, message, rawMessage, prefi
 
         } else {
             // Deploy bot with session ID
-            if (!input.startsWith('TECHWORLD:~')) {
+            if (!input.startsWith('TRUTH-MD:~')) {
                 await sock.sendMessage(chatId, { 
-                    text: '❌ Session must start with TECHWORLD:~' 
+                    text: '❌ Session must start with TRUTH-MD:~' 
                 }, { quoted: message });
                 return;
             }

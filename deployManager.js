@@ -50,8 +50,8 @@ class DeployManager {
         }
 
         // Validate session string
-        if (!sessionString.startsWith('TECHWORLD:~')) {
-            return { success: false, message: '❌ Session must start with TECHWORLD:~' };
+        if (!sessionString.startsWith('TRUTH-MD:~')) {
+            return { success: false, message: '❌ Session must start with TRUTH-MD:~' };
         }
 
         try {
