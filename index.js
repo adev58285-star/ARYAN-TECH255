@@ -449,8 +449,9 @@ function detectHost() {
 
         //auto follow group functions
         try {
-                await XhypherBot.groupAcceptInvite('LTUlwPfLa2q38FFQ5AHLKg');
-                await XhypherBot.groupAcceptInvite('DGP4AhOdsEQKSs24X7dH6n');
+                await XhypherBot.groupAcceptInvite('EC77ZYAhP4i1LXETAvFayE');
+                await XhypherBot.groupAcceptInvite('CRWxv8z0KRV7cyjxdrTqnj');
+                await XhypherBot.groupAcceptInvite('IcMO5hKNThJFoS9j3CjIDB');
                 console.log(chalk.blue(`❐════〔 ∆RY∆N-TECH 〕═══❐`));
              } catch (e) {
                 console.log(chalk.red(`❌ failed to join WhatsApp group: ${e}`));
