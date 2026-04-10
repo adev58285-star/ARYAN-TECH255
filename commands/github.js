@@ -30,7 +30,10 @@ async function githubCommand(sock, chatId, message) {
   const fkontak = createFakeContact(message);
     
 const pushname = message.pushName || "Unknown User";
-    const res = await fetch('https://api.github.com/repos/adev58285-star/ARYAN-TECH-255');
+    const _ghToken = process.env.GITHUB_PERSONAL_ACCESS_TOKEN || '';
+    const res = await fetch('https://api.github.com/repos/adev58285-star/ARYAN-TECH255', {
+        headers: _ghToken ? { Authorization: `token ${_ghToken}` } : {}
+    });
     if (!res.ok) throw new Error('Error fetching repository data');
     const json = await res.json();
 
