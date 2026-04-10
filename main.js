@@ -525,15 +525,31 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
  const senderNum = participant.split('@')[0];
  const chatIdNum = chatId.split('@')[0];
 
- console.log(chalk.bgHex('#121212').cyan(`
-»Message Type: ${msgType}
-» Message Time: ${eatTime}
-» Speed: ${speed}
-» Sender: ${senderNum}
-» Name: ${pushname}
-» Chat ID: ${chatIdNum}
-» Message: ${body || 'N/A'}
-`));
+ // Alternating border: cyan ↔ yellow (matches screenshot style)
+ global._aryanLogCount = ((global._aryanLogCount || 0) + 1);
+ const _bc = global._aryanLogCount % 2 === 0 ? chalk.yellow : chalk.cyan;
+ const _hline = '═'.repeat(10);
+ const _boxTop    = _bc(`╔${_hline}[ ∆RY∆N-TECH ]${_hline}╗`);
+ const _boxBottom = _bc(`╚${'═'.repeat(34)}╝`);
+
+ // Speed value color: FAST=green, MODERATE=cyan, SLOW=red
+ const _speedColor = _speedLabel === 'FAST' ? chalk.greenBright
+                   : _speedLabel === 'SLOW' ? chalk.red
+                   : chalk.cyan;
+
+ console.log([
+     '',
+     _boxTop,
+     chalk.magenta(`» Message Type: ${msgType}`),
+     chalk.hex('#FF8C00')(`» Message Time: ${eatTime}`),
+     chalk.cyan('» Speed: ') + _speedColor(speed),
+     chalk.cyan(`» Sender: ${senderNum}`),
+     chalk.green(`» Name: ${pushname}`),
+     chalk.cyan(`» Chat ID: ${chatIdNum}`),
+     chalk.cyan(`» Message: ${body || 'N/A'}`),
+     _boxBottom,
+     '',
+ ].join('\n'));
  }
         // Enforce private mode BEFORE any replies (except owner/sudo)
         try {
