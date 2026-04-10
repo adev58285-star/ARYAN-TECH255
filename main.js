@@ -503,18 +503,37 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
  const chatType = chatId.endsWith('@g.us') ? 'Group' : 'Private';
  const chatName = chatType === 'Group' ? (groupMetadata?.subject || 'Unknown Group') : pushname;
  const command = messageUpdate
- const time = new Date().toLocaleTimeString();
- 
+
+ // Message type detection
+ const _msgTypeKeys = ['conversation','extendedTextMessage','imageMessage','videoMessage','audioMessage','stickerMessage','documentMessage','contactMessage','locationMessage','reactionMessage','buttonsResponseMessage','listResponseMessage'];
+ const _rawType = _msgTypeKeys.find(t => message.message?.[t]) || 'unknown';
+ const msgType = _rawType === 'conversation' ? 'text' : _rawType.replace('Message', '');
+
+ // EAT time (UTC+3)
+ const _eatNow = new Date(Date.now() + 3 * 3600 * 1000);
+ const _dayName = _eatNow.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Africa/Nairobi' });
+ const _timeStr = _eatNow.toLocaleTimeString('en-GB', { hour12: false, timeZone: 'Africa/Nairobi' });
+ const eatTime = `${_dayName}, ${_timeStr} EAT`;
+
+ // Speed (time since message was sent)
+ const _sent = (message.messageTimestamp || 0) * 1000;
+ const _speed = _sent ? ((Date.now() - _sent) / 1000).toFixed(2) : '0.00';
+ const _speedLabel = parseFloat(_speed) < 1 ? 'FAST' : parseFloat(_speed) < 3 ? 'MODERATE' : 'SLOW';
+ const speed = `${_speed}s [ ${_speedLabel} ]`;
+
+ // Sender number and chat ID (strip @suffix)
+ const senderNum = participant.split('@')[0];
+ const chatIdNum = chatId.split('@')[0];
+
  console.log(chalk.bgHex('#121212').cyan(`
-╭═════════ 〔 ∆RY∆N-TECH 〕══════❐
-  ➽ Sent Time: ${time}
-  ➽ Sender: ${pushname}
-  ➽ Type: ${chatType}
-┃ ➽ Message: ${body || "—"}
-╰═══════════════════════════❐
-☆ 《 ∆RY∆N-TECH 》☆
-`)
-);   
+»Message Type: ${msgType}
+» Message Time: ${eatTime}
+» Speed: ${speed}
+» Sender: ${senderNum}
+» Name: ${pushname}
+» Chat ID: ${chatIdNum}
+» Message: ${body || 'N/A'}
+`));
  }
         // Enforce private mode BEFORE any replies (except owner/sudo)
         try {
