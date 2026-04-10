@@ -578,34 +578,9 @@ async function startXhypherBot() {
     });
 
 
-    let pairingCodeRequested = false;
-
     // --- ⚠️ CONNECTION UPDATE LISTENER (Enhanced Logic with 401/408 handler)
     XhypherBot.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect, qr } = update;
-
-        // When WhatsApp sends a QR challenge, auto-request a pairing code for the owner number.
-        // This happens when the session is new/unregistered and avoids the "QR refs attempts ended" timeout.
-        if (qr && !pairingCodeRequested) {
-            pairingCodeRequested = true;
-            try {
-                const ownerNum = (settings?.ownerNumber || '').replace(/[^0-9]/g, '');
-                if (ownerNum) {
-                    log(`New device detected. Requesting pairing code for +${ownerNum}...`, 'yellow');
-                    await delay(3000);
-                    const code = await XhypherBot.requestPairingCode(ownerNum);
-                    const formatted = code?.match(/.{1,4}/g)?.join('-') || code;
-                    log(`╔══════════════════════════`, 'green');
-                    log(`║ PAIRING CODE: ${formatted}`, 'green');
-                    log(`╚══════════════════════════`, 'green');
-                    log(`Open WhatsApp → Settings → Linked Devices → Link a Device → enter the code above`, 'green');
-                } else {
-                    log(`QR received but no owner number set. Set ownerNumber in settings.js to auto-pair.`, 'red', true);
-                }
-            } catch (e) {
-                log(`Failed to request pairing code: ${e.message}`, 'red', true);
-            }
-        }
 
         if (connection === 'close') {
             global.isBotConnected = false; 
