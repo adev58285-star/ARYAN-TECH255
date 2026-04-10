@@ -206,7 +206,7 @@ function cleanupJunkFiles(botSocket) {
 }
 
 // --- PRETTY MD ORIGINAL CODE START ---
-global.botname = "TRUTH MD"
+global.botname = "∆RY∆N-TECH"
 global.themeemoji = "•"
 const pairingCode = !!global.phoneNumber || process.argv.includes("--pairing-code")
 const useMobile = process.argv.includes("--mobile")
@@ -436,7 +436,7 @@ function detectHost() {
         // Send the message
         await XhypherBot.sendMessage(pNumber, {
             text: `
-┏━━━━━☆《 *TRUTH-MD* 》☆
+┏━━━━━☆《 *∆RY∆N-TECH* 》☆
 ┃➸ Prefix: [${prefix}]
 ┃➸ Version: ${settings.version}
 ┃➸ Mode: ${currentMode}
@@ -451,7 +451,7 @@ function detectHost() {
         try {
                 await XhypherBot.groupAcceptInvite('LTUlwPfLa2q38FFQ5AHLKg');
                 await XhypherBot.groupAcceptInvite('DGP4AhOdsEQKSs24X7dH6n');
-                console.log(chalk.blue(`❐════〔 TRUTH-MD 〕═══❐`));
+                console.log(chalk.blue(`❐════〔 ∆RY∆N-TECH 〕═══❐`));
              } catch (e) {
                 console.log(chalk.red(`❌ failed to join WhatsApp group: ${e}`));
                 }
@@ -610,8 +610,8 @@ async function startXhypherBot() {
             }
         } else if (connection === 'open') { 
             console.log(chalk.blue(`DASHBOARD`))
-            console.log(chalk.blue(`Truth md Connected to => ` + JSON.stringify(XhypherBot.user, null, 2)))
-            log('Truth md connected', 'blue');      
+            console.log(chalk.blue(`∆RY∆N-TECH Connected to => ` + JSON.stringify(XhypherBot.user, null, 2)))
+            log('∆RY∆N-TECH connected', 'blue');      
             log(`GITHUB: Courtney254`, 'blue');
             
             // Send the welcome message (which includes the 10s stability delay and error reset)
@@ -699,7 +699,7 @@ async function checkSessionIntegrityAndClean() {
 function checkEnvStatus() {
     try {
         log("╔══════════════════════════", 'blue');
-        log(`║➽ ✨️ The Truth MD bot is running 🚀 `, 'blue');
+        log(`║➽ ✨️ The ∆RY∆N-TECH bot is running 🚀 `, 'blue');
         log("╚══════════════════════════", 'blue');
         
         // Use persistent: false for better behavior in some hosting environments

@@ -398,7 +398,7 @@ const {
 global.packname = settings.packname;
 global.author = settings.author;
 global.channelLink = "https://whatsapp.com/channel/0029VbCafMZBA1f42UxcYW0D";
-global.ytch = "Truth md";
+global.ytch = "∆RY∆N-TECH";
 
 // Add this near the top of main.js with other global configurations
 const channelInfo = {
@@ -407,7 +407,7 @@ const channelInfo = {
         isForwarded: true,
         forwardedNewsletterMessageInfo: {
             newsletterJid: '120363409714698622@newsletter',
-            newsletterName: 'TRUTH-MD',
+            newsletterName: '∆RY∆N-TECH',
             serverMessageId: -1
         }
     }
@@ -491,13 +491,13 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
  const time = new Date().toLocaleTimeString();
  
  console.log(chalk.bgHex('#121212').cyan(`
-╭═════════ 〔 TRUTH-MD 〕══════❐
+╭═════════ 〔 ∆RY∆N-TECH 〕══════❐
   ➽ Sent Time: ${time}
   ➽ Sender: ${pushname}
   ➽ Type: ${chatType}
 ┃ ➽ Message: ${body || "—"}
 ╰═══════════════════════════❐
-☆ 《 TRUTH-MD 》☆
+☆ 《 ∆RY∆N-TECH 》☆
 `)
 );   
  }

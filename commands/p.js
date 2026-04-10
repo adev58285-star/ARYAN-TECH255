@@ -10,7 +10,7 @@ async function pCommand( sock, chatId, message ) {
     });
 
     const ping = Date.now() - start;
-    const response = `*🔸pretty-md speed🔹:* ${ping} ms`;
+    const response = `*🔸∆RY∆N-TECH speed🔹:* ${ping} ms`;
 
     await sock.sendMessage(chatId, {
       text: response,

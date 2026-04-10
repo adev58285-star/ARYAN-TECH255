@@ -77,7 +77,7 @@ async function settingsCommand(sock, chatId, message) {
             }
         } else {
             lines.push('');
-            lines.push('> *Pretty md the best WhatsAppbot* .');
+            lines.push('> *∆RY∆N-TECH the best WhatsAppbot* .');
         }
 
         await sock.sendMessage(chatId, { text: lines.join('\n') }, { quoted: message });

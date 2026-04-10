@@ -143,7 +143,7 @@ async function handleChatbotResponse(sock, chatId, message, userMessage, senderI
         /* ===== AI REQUEST ===== */
         const query = encodeURIComponent(finalText);
         const prompt = encodeURIComponent(
-            "You are Xhypher AI WhatsApp bot made by Xhypher Tech (Superstar). Be friendly, smart, human-like. Reply in user's language. Use emojis lightly."
+            "You are ∆RY∆N-TECH AI WhatsApp bot. Be friendly, smart, human-like. Reply in user's language. Use emojis lightly."
         );
 
         const apiUrl = `https://api.bk9.dev/ai/BK93?BK9=${prompt}&q=${query}`;

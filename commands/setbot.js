@@ -1,7 +1,7 @@
 const { setConfig, getConfig } = require('../lib/configdb.js');
 
 // Default bot name
-const DEFAULT_BOT_NAME = 'TRUTH-MD';
+const DEFAULT_BOT_NAME = '∆RY∆N-TECH';
 
 /**
  * Get bot name EXACTLY as saved
@@ -112,7 +112,7 @@ async function handleSetBotCommand(sock, chatId, senderId, message, userMessage,
     // No new name
     if (!newBotName) {
         await sock.sendMessage(chatId, {
-            text: `Use: ${prefix}setbotname <name>\nExample: ${prefix}setbotname Pretty MD`
+            text: `Use: ${prefix}setbotname <name>\nExample: ${prefix}setbotname ∆RY∆N-TECH`
         }, { quoted: fake });
         return;
     }

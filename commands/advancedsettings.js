@@ -13,7 +13,7 @@ const channelInfo = {
         isForwarded: true,
         forwardedNewsletterMessageInfo: {
             newsletterJid: '120363401148284316@newsletter',
-            newsletterName: 'Xhypher tech',
+            newsletterName: '∆RY∆N-TECH',
             serverMessageId: -1
         }
     }
