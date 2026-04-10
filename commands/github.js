@@ -30,7 +30,7 @@ async function githubCommand(sock, chatId, message) {
   const fkontak = createFakeContact(message);
     
 const pushname = message.pushName || "Unknown User";
-    const res = await fetch('https://api.github.com/repos/superstar-zimtk/pretty-md');
+    const res = await fetch('https://api.github.com/repos/adev58285-star/ARYAN-TECH-255');
     if (!res.ok) throw new Error('Error fetching repository data');
     const json = await res.json();
 
@@ -59,7 +59,7 @@ const pushname = message.pushName || "Unknown User";
                     isForwarded: false,
                     forwardedNewsletterMessageInfo: {
                         newsletterJid: '@newsletter',
-                        newsletterName: 'pretty Official',
+                        newsletterName: '∆RY∆N-TECH',
                         serverMessageId: -1
                     }
                 }
