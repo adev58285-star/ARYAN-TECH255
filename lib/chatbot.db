@@ -15,7 +15,7 @@ const dbPath = path.join(__dirname, '..', 'Database', 'chatbot.db');
 const dbDir = path.join(__dirname, '..', 'Database');
 if (!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir, { recursive: true });
-    console.log(purple('[PRETTY-MD] Database directory created'));
+    console.log(purple('[∆RY∆N-TECH] Database directory created'));
 }
 
 // Initialize database
@@ -23,7 +23,7 @@ const dbe = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error(chalk.red('❌ Database Error:'), err);
     } else {
-        console.log(purple('[PRETTY-MD] Connected to Chatbot Database.'));
+        console.log(purple('[∆RY∆N-TECH] Connected to Chatbot Database.'));
         initializeDatabase();
     }
 });
@@ -42,7 +42,7 @@ function initializeDatabase() {
             if (err) {
                 console.error(chalk.red('❌ Failed to create user_messages table:'), err.message);
             } else {
-                console.log(purple('[PRETTY-MD] user_messages table ready'));
+                console.log(purple('[∆RY∆N-TECH] user_messages table ready'));
             }
         });
 
@@ -55,7 +55,7 @@ function initializeDatabase() {
             if (err) {
                 console.error(chalk.red('❌ Failed to create settings table:'), err.message);
             } else {
-                console.log(purple('[PRETTY-MD] settings table ready'));
+                console.log(purple('[∆RY∆N-TECH] settings table ready'));
             }
         });
 
@@ -112,7 +112,7 @@ function cleanupChatbotMessages(days = 7) {
             }
         } else {
             console.log(
-                purple(`[PRETTY-MD] Cleaned messages older than ${days} days`)
+                purple(`[∆RY∆N-TECH] Cleaned messages older than ${days} days`)
             );
         }
     });
@@ -140,7 +140,7 @@ function setSetting(key, value) {
             console.error(chalk.red('❌ Error saving setting:'), err);
         } else {
             console.log(
-                purple(`[PRETTY-MD] Setting saved → ${key}`)
+                purple(`[∆RY∆N-TECH] Setting saved → ${key}`)
             );
         }
     });

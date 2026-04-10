@@ -39,13 +39,13 @@ const { rmSync } = require('fs')
 
 // --- 🌟 NEW: Centralized Logging Function ---
 /**
- * Custom logging function to enforce the [ TRUTH - MD ] prefix and styling.
+ * Custom logging function to enforce the [ ∆RY∆N-TECH ] prefix and styling.
  * @param {string} message - The message to log.
  * @param {string} [color='white'] - The chalk color (e.g., 'green', 'red', 'yellow').
  * @param {boolean} [isError=false] - Whether to use console.error.
  */
 function log(message, color = 'white', isError = false) {
-    const prefix = chalk.blue.bold('[ TRUTH - MD ]');
+    const prefix = chalk.blue.bold('[ ∆RY∆N-TECH ]');
     const logFunc = isError ? console.error : console.log;
     const coloredMessage = chalk[color](message);
     
