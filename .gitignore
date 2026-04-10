@@ -1,0 +1,7 @@
+node_modules/
+session/
+baileys_store.json
+data/messageCount.json
+*.log
+.env
+temp/
