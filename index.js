@@ -356,19 +356,36 @@ async function getLoginMethod() {
     }
 }
 
+// Convert {type:'Buffer', data:[...byte array...]} → real Buffer instances
+// so that BufferJSON.replacer can encode them as base64 (the format Baileys expects)
+function convertByteArrayBuffers(val) {
+    if (val && typeof val === 'object') {
+        if (val.type === 'Buffer' && Array.isArray(val.data)) return Buffer.from(val.data);
+        if (Array.isArray(val)) return val.map(convertByteArrayBuffers);
+        const out = {};
+        for (const k of Object.keys(val)) out[k] = convertByteArrayBuffers(val[k]);
+        return out;
+    }
+    return val;
+}
+
 // --- Download session (∆RY∆N-TECH) ---
 async function downloadSessionData() {
     try {
         await fs.promises.mkdir(sessionDir, { recursive: true });
         if (!fs.existsSync(credsPath) && global.SESSION_ID) {
             const base64Data = global.SESSION_ID.includes("TRUTH-MD:~") ? global.SESSION_ID.split("TRUTH-MD:~")[1] : global.SESSION_ID;
-            const decoded = JSON.parse(Buffer.from(base64Data, 'base64').toString('utf8'), BufferJSON.reviver);
+            // Parse raw JSON — session may store Buffers as byte arrays, not base64
+            const rawDecoded = JSON.parse(Buffer.from(base64Data, 'base64').toString('utf8'));
+            // Convert any {type:'Buffer',data:[...]} byte-array objects to real Buffers
+            const decoded = convertByteArrayBuffers(rawDecoded);
 
             // Merge decoded SESSION_ID fields into a full set of default credentials.
             // This ensures all required fields (signedIdentityKey, signedPreKey, etc.)
             // are present even when the SESSION_ID only contains partial credentials.
             const fullCreds = { ...initAuthCreds(), ...decoded };
 
+            // Re-stringify with BufferJSON.replacer so Baileys reads proper base64 Buffers
             await fs.promises.writeFile(credsPath, JSON.stringify(fullCreds, BufferJSON.replacer));
             log(`Session successfully saved.`, 'green');
         }
