@@ -525,14 +525,16 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
  const senderNum = participant.split('@')[0];
  const chatIdNum = chatId.split('@')[0];
 
- // Alternating border: cyan ↔ yellow (matches screenshot style)
+ // Top border alternates cyan/yellow; bottom is always the opposite color
  global._aryanLogCount = ((global._aryanLogCount || 0) + 1);
- const _bc = global._aryanLogCount % 2 === 0 ? chalk.yellow : chalk.cyan;
- const _hline = '═'.repeat(10);
- const _boxTop    = _bc(`╔${_hline}[ ∆RY∆N-TECH ]${_hline}╗`);
- const _boxBottom = _bc(`╚${'═'.repeat(34)}╝`);
+ const _isOdd   = global._aryanLogCount % 2 !== 0;
+ const _topBC   = _isOdd  ? chalk.cyan   : chalk.yellow;
+ const _botBC   = _isOdd  ? chalk.yellow : chalk.cyan;
+ const _hline   = '═'.repeat(10);
+ const _boxTop    = _topBC(`╔${_hline}[ ∆RY∆N-TECH ]${_hline}╗`);
+ const _boxBottom = _botBC(`╚${'═'.repeat(34)}╝`);
 
- // Speed value color: FAST=green, MODERATE=cyan, SLOW=red
+ // Entire speed line is one color — FAST=green, MODERATE=cyan, SLOW=red
  const _speedColor = _speedLabel === 'FAST' ? chalk.greenBright
                    : _speedLabel === 'SLOW' ? chalk.red
                    : chalk.cyan;
@@ -540,11 +542,11 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
  console.log([
      '',
      _boxTop,
-     chalk.magenta(`» Message Type: ${msgType}`),
+     chalk.hex('#cc44ff')(`» Message Type: ${msgType}`),
      chalk.hex('#FF8C00')(`» Message Time: ${eatTime}`),
-     chalk.cyan('» Speed: ') + _speedColor(speed),
+     _speedColor(`» Speed: ${speed}`),
      chalk.cyan(`» Sender: ${senderNum}`),
-     chalk.green(`» Name: ${pushname}`),
+     chalk.greenBright(`» Name: ${pushname}`),
      chalk.cyan(`» Chat ID: ${chatIdNum}`),
      chalk.cyan(`» Message: ${body || 'N/A'}`),
      _boxBottom,
