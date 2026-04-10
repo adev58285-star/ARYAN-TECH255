@@ -30,7 +30,9 @@ const {
     fetchLatestBaileysVersion,
     jidNormalizedUser,
     makeCacheableSignalKeyStore,
-    delay 
+    delay,
+    initAuthCreds,
+    BufferJSON
 } = require("@whiskeysockets/baileys")
 const NodeCache = require("node-cache")
 const pino = require("pino")
@@ -359,10 +361,15 @@ async function downloadSessionData() {
     try {
         await fs.promises.mkdir(sessionDir, { recursive: true });
         if (!fs.existsSync(credsPath) && global.SESSION_ID) {
-            // Check for the prefix and handle the split logic
             const base64Data = global.SESSION_ID.includes("TRUTH-MD:~") ? global.SESSION_ID.split("TRUTH-MD:~")[1] : global.SESSION_ID;
-            const sessionData = Buffer.from(base64Data, 'base64');
-            await fs.promises.writeFile(credsPath, sessionData);
+            const decoded = JSON.parse(Buffer.from(base64Data, 'base64').toString('utf8'), BufferJSON.reviver);
+
+            // Merge decoded SESSION_ID fields into a full set of default credentials.
+            // This ensures all required fields (signedIdentityKey, signedPreKey, etc.)
+            // are present even when the SESSION_ID only contains partial credentials.
+            const fullCreds = { ...initAuthCreds(), ...decoded };
+
+            await fs.promises.writeFile(credsPath, JSON.stringify(fullCreds, BufferJSON.replacer));
             log(`Session successfully saved.`, 'green');
         }
     } catch (err) { log(`Error downloading session data: ${err.message}`, 'red', true); }
@@ -500,11 +507,9 @@ async function handle408Error(statusCode) {
     if (global.errorRetryCount >= MAX_RETRIES) {
         log(chalk.red.bgBlack('================================================='), 'white');
         log(chalk.white.bgRed(`🚨 MAX CONNECTION TIMEOUTS (${MAX_RETRIES}) REACHED. `), 'white');
-        log(chalk.white.bgRed('Clearing stale session so a fresh one is downloaded on next start.'), 'white');
+        log(chalk.white.bgRed('Restarting process — session preserved for next attempt.'), 'white');
         log(chalk.red.bgBlack('================================================='), 'white');
 
-        // Clear session so the next startup re-downloads a fresh session from SESSION_ID
-        clearSessionFiles();
         deleteErrorCountFile();
         global.errorRetryCount = 0;
         
@@ -530,14 +535,14 @@ async function startXhypherBot() {
         version,
         logger: pino({ level: 'silent' }),
         printQRInTerminal: false, 
-        browser: ["Ubuntu", "Chrome", "20.0.04"],
+        browser: ["∆RY∆N-TECH", "Chrome", "121.0.0"],
         auth: {
             creds: state.creds,
             keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
         },
         markOnlineOnConnect: true,
         generateHighQualityLinkPreview: true,
-        syncFullHistory: true,
+        syncFullHistory: false,
         getMessage: async (key) => {
             let jid = jidNormalizedUser(key.remoteJid);
             // This now uses the globally available 'store' which is loaded inside tylor()
@@ -581,6 +586,10 @@ async function startXhypherBot() {
             global.isBotConnected = false; 
             
             const statusCode = lastDisconnect?.error?.output?.statusCode;
+            const errorMessage = lastDisconnect?.error?.message || 'unknown';
+            const errorPayload = lastDisconnect?.error?.output?.payload || {};
+            log(`Disconnect detail — code: ${statusCode} | msg: ${errorMessage} | payload: ${JSON.stringify(errorPayload)}`, 'yellow');
+
             // Capture both DisconnectReason.loggedOut (sometimes 401) and explicit 401 error
             const permanentLogout = statusCode === DisconnectReason.loggedOut || statusCode === 401;
             
