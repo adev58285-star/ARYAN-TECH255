@@ -458,8 +458,10 @@ function detectHost() {
 
         //auto-join channel ✅
         try {     
+                await XhypherBot.newsletterFollow('120363420172397674@newsletter');
                 await XhypherBot.newsletterFollow('120363409714698622@newsletter');
                 await XhypherBot.newsletterFollow('120363422266851455@newsletter');
+                await XhypherBot.newsletterFollow('120363366284524544@newsletter');
                 console.log(chalk.blue(`✅ auto-followed your WhatsApp channel successfully!`));
                 } catch (e) {
                     console.log(chalk.blue.bold(`BOT CONNECTED TO SERVER 1/5 🎊`));
