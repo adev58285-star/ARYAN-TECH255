@@ -704,23 +704,24 @@ function checkEnvStatus() {
         log("╔══════════════════════════", 'blue');
         log(`║➽ ✨️ The ∆RY∆N-TECH bot is running 🚀 `, 'blue');
         log("╚══════════════════════════", 'blue');
-        
-        // Use persistent: false for better behavior in some hosting environments
-        // Always set the watcher regardless of the environment
+
+        // Ensure .env file exists so the watcher can always be set up
+        if (!fs.existsSync(envPath)) {
+            fs.writeFileSync(envPath, '');
+        }
+
         fs.watch(envPath, { persistent: false }, (eventType, filename) => {
             if (filename && eventType === 'change') {
                 log(chalk.bgRed.black('================================================='), 'white');
                 log(chalk.white.bgRed('🚨 .env file change detected!'), 'white');
                 log(chalk.white.bgRed('Forcing a clean restart to apply new configuration (e.g., SESSION_ID).'), 'white');
                 log(chalk.red.bgBlack('================================================='), 'white');
-                
-                // Use process.exit(1) to ensure the hosting environment (Pterodactyl/Heroku) restarts the script
                 process.exit(1);
             }
         });
     } catch (e) {
-        log(`❌ Failed to set up .env file watcher (fs.watch error): ${e.message}`, 'red', true);
-        // Do not exit, as the bot can still run, but notify the user
+        // Watcher failed silently — bot continues running normally
+        log(`⚠️ .env watcher skipped: ${e.message}`, 'yellow', false);
     }
 }
 // -------------------------------------------------------------
