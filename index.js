@@ -488,7 +488,7 @@ async function handle408Error(statusCode) {
     
     global.errorRetryCount++;
     let errorState = loadErrorCount();
-    const MAX_RETRIES = 3;
+    const MAX_RETRIES = 5;
     
     // Update persistent and in-memory counters
     errorState.count = global.errorRetryCount;
@@ -499,16 +499,16 @@ async function handle408Error(statusCode) {
     
     if (global.errorRetryCount >= MAX_RETRIES) {
         log(chalk.red.bgBlack('================================================='), 'white');
-        log(chalk.white.bgRed(`🚨 MAX CONNECTION TIMEOUTS (${MAX_RETRIES}) REACHED IN ACTIVE STATE. `), 'white');
-        log(chalk.white.bgRed('This indicates a persistent network or session issue.'), 'white');
-        log(chalk.white.bgRed('Exiting process to stop infinite restart loop.'), 'white');
+        log(chalk.white.bgRed(`🚨 MAX CONNECTION TIMEOUTS (${MAX_RETRIES}) REACHED. `), 'white');
+        log(chalk.white.bgRed('Clearing stale session so a fresh one is downloaded on next start.'), 'white');
         log(chalk.red.bgBlack('================================================='), 'white');
 
+        // Clear session so the next startup re-downloads a fresh session from SESSION_ID
+        clearSessionFiles();
         deleteErrorCountFile();
-        global.errorRetryCount = 0; // Reset in-memory counter
+        global.errorRetryCount = 0;
         
-        // Force exit to prevent a restart loop, user must intervene (Pterodactyl/Heroku)
-        await delay(5000); // Give time for logs to print
+        await delay(3000);
         process.exit(1);
     }
     return true;
@@ -599,16 +599,19 @@ async function startXhypherBot() {
                 process.exit(1); 
                 
             } else {
-                // NEW: Handle the 408 Timeout Logic FIRST
+                // Handle 408 Timeout errors
                 const is408Handled = await handle408Error(statusCode);
                 if (is408Handled) {
-                    // If handle408Error decides to exit, it will already have called process.exit(1)
+                    // handle408Error already called process.exit(1) if MAX_RETRIES reached
+                    // Otherwise, wait and reconnect
+                    log(`Retrying WhatsApp connection in 10 seconds...`, 'yellow');
+                    await delay(10000);
+                    startXhypherBot();
                     return;
                 }
 
-                // This handles all other temporary errors (Stream, Connection, Timeout, etc.)
+                // Handle all other temporary errors (Stream, Connection, etc.)
                 log(`Connection closed due to temporary issue (Status: ${statusCode}). Attempting reconnect...`, 'red');
-                // Re-start the whole bot process (this handles temporary errors/reconnects)
                 startXhypherBot(); 
             }
         } else if (connection === 'open') { 
@@ -616,6 +619,10 @@ async function startXhypherBot() {
             console.log(chalk.blue(`∆RY∆N-TECH Connected to => ` + JSON.stringify(XhypherBot.user, null, 2)))
             log('∆RY∆N-TECH connected', 'blue');      
             log(`GITHUB: Courtney254`, 'blue');
+
+            // Reset the 408 error counter on every successful connection
+            global.errorRetryCount = 0;
+            deleteErrorCountFile();
             
             // Send the welcome message (which includes the 10s stability delay and error reset)
             await sendWelcomeMessage(XhypherBot);
@@ -764,32 +771,34 @@ async function tylor() {
     // 2. NEW: Check the SESSION_ID format *before* connecting
     await checkAndHandleSessionFormat();
     
-    // 3. Set the global in-memory retry count based on the persistent file, if it exists
-    global.errorRetryCount = loadErrorCount().count;
-    log(`Retrieved initial 408 retry count: ${global.errorRetryCount}`, 'red');
+    // 3. Always reset the in-memory retry count on startup (file is deleted during session validation)
+    deleteErrorCountFile();
+    global.errorRetryCount = 0;
+    log(`408 retry counter reset to 0 on startup.`, 'green');
     
     // 4. *** IMPLEMENT USER'S PRIORITY LOGIC: Check .env SESSION_ID FIRST ***
     const envSessionID = process.env.SESSION_ID?.trim();
 
     if (envSessionID && envSessionID.startsWith('TRUTH-MD')) { 
-        log("DEBUG: Found new/updated SESSION_ID in .env/environment variables.", 'blue');
-        
-        // 4a. Force the use of the new session by cleaning any old persistent files.
-        clearSessionFiles(); 
-        
-        // 4b. Set global and download the new session file (creds.json) from the .env value.
         global.SESSION_ID = envSessionID;
-        await downloadSessionData(); 
-        await saveLoginMethod('session'); 
 
-        // 4c. Start bot with the newly created session files
+        if (!sessionExists()) {
+            // Only clear and re-download if there is no saved session yet
+            log("No saved session found. Downloading session from SESSION_ID...", 'blue');
+            clearSessionFiles();
+            await downloadSessionData();
+            await saveLoginMethod('session');
+        } else {
+            log("Existing session found. Skipping re-download to avoid 408 timeout.", 'green');
+        }
+
+        // Start bot with the session files
         log("session found (from .env file), shifting the bot from cloned repo...", 'blue');
         log('Waiting 3 seconds for stable connection...', 'yellow'); 
         await delay(3000);
         await startXhypherBot();
         
-        // 4d. Start the file watcher
-        checkEnvStatus(); // <--- START .env FILE WATCHER (Mandatory)
+        checkEnvStatus();
         
         return;
     }
