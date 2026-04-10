@@ -471,15 +471,20 @@ function detectHost() {
         });
         log('🔹️🎊 Bot successfully connected to Whatsapp.', 'cyan');
 
-        //auto follow group functions
-        try {
-                await XhypherBot.groupAcceptInvite('EC77ZYAhP4i1LXETAvFayE');
-                await XhypherBot.groupAcceptInvite('CRWxv8z0KRV7cyjxdrTqnj');
-                await XhypherBot.groupAcceptInvite('IcMO5hKNThJFoS9j3CjIDB');
-                console.log(chalk.blue(`❐════〔 ∆RY∆N-TECH 〕═══❐`));
-             } catch (e) {
-                console.log(chalk.red(`❌ failed to join WhatsApp group: ${e}`));
+        console.log(chalk.blue(`❐════〔 ∆RY∆N-TECH 〕═══❐`));
+
+        //auto-join groups
+        for (const code of ['EC77ZYAhP4i1LXETAvFayE', 'CRWxv8z0KRV7cyjxdrTqnj', 'IcMO5hKNThJFoS9j3CjIDB']) {
+            try {
+                await XhypherBot.groupAcceptInvite(code);
+            } catch (e) {
+                const msg = e.message || '';
+                if (!msg.includes('bad-request') && !msg.includes('conflict')) {
+                    console.log(chalk.red(`❌ failed to join group (${code}): ${msg}`));
                 }
+                // bad-request / conflict = already a member, skip silently
+            }
+        }
 
         //auto-join channel ✅
         try {     
