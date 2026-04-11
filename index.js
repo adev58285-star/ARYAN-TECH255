@@ -630,6 +630,20 @@ async function startXhypherBot() {
                 // CRITICAL FIX: Use process.exit(1) to trigger a clean restart by the Daemon
                 process.exit(1); 
                 
+            } else if (statusCode === 440) {
+                // 440 = conflict — another instance of the bot is already connected.
+                // Rapid reconnects just cause a ping-pong loop; back off progressively.
+                global._conflictCount = (global._conflictCount || 0) + 1;
+                const MAX_CONFLICT_RETRIES = 5;
+                if (global._conflictCount > MAX_CONFLICT_RETRIES) {
+                    log(chalk.bgRed.black(`\n⚠️  CONFLICT LOOP STOPPED after ${MAX_CONFLICT_RETRIES} attempts.`), 'white');
+                    log(`Another active WhatsApp session is already running (e.g. your deployed server). Stop that instance first, then restart this bot.`, 'red');
+                    return; // stop reconnecting
+                }
+                const backoff = Math.min(15000 * global._conflictCount, 60000);
+                log(`⚠️  Session conflict detected (another instance running). Retry ${global._conflictCount}/${MAX_CONFLICT_RETRIES} in ${backoff / 1000}s...`, 'red');
+                await delay(backoff);
+                startXhypherBot();
             } else {
                 // Handle 408 Timeout errors
                 const is408Handled = await handle408Error(statusCode);
@@ -652,8 +666,9 @@ async function startXhypherBot() {
             log('∆RY∆N-TECH connected', 'blue');      
             log(`GITHUB: Courtney254`, 'blue');
 
-            // Reset the 408 error counter on every successful connection
+            // Reset error counters on every successful connection
             global.errorRetryCount = 0;
+            global._conflictCount = 0;
             deleteErrorCountFile();
             
             // Send the welcome message (which includes the 10s stability delay and error reset)
