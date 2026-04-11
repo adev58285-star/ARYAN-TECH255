@@ -1,5 +1,5 @@
 /**
- * june md Bot - A WhatsApp Bot
+ * ∆RY∆N-TECH Bot - A WhatsApp Bot
  * Autoread Command - Automatically read all messages
  */
 
@@ -34,7 +34,7 @@ async function autoreadCommand(sock, chatId, message) {
                     isForwarded: false,
                     forwardedNewsletterMessageInfo: {
                         newsletterJid: '',
-                        newsletterName: 'june MD',
+                        newsletterName: '∆RY∆N-TECH',
                         serverMessageId: -1
                     }
                 }

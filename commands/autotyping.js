@@ -1,5 +1,5 @@
 /**
- * june md Bot - A WhatsApp Bot
+ * ∆RY∆N-TECH Bot - A WhatsApp Bot
  * Autotyping Command - Shows fake typing status
  */
 

@@ -1,5 +1,5 @@
 /**
- * june md Bot - A WhatsApp Bot
+ * ∆RY∆N-TECH Bot - A WhatsApp Bot
  * Auto-recording Command - Shows fake recording status
  */
 

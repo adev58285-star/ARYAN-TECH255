@@ -5,11 +5,11 @@ function createFakeContact(message) {
             participants: "0@s.whatsapp.net",
             remoteJid: "status@broadcast",
             fromMe: false,
-            id: "JUNE-MD-MENU"
+            id: "ARYAN-MD-MENU"
         },
         message: {
             contactMessage: {
-                vcard: `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:JUNE MD\nitem1.TEL;waid=${message.key.participant?.split('@')[0] || message.key.remoteJid.split('@')[0]}:${message.key.participant?.split('@')[0] || message.key.remoteJid.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`
+                vcard: `BEGIN:VCARD\nVERSION:3.0\nN:ARYAN;TECH;;;\nFN:∆RY∆N-TECH\nitem1.TEL;waid=${message.key.participant?.split('@')[0] || message.key.remoteJid.split('@')[0]}:${message.key.participant?.split('@')[0] || message.key.remoteJid.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`
             }
         },
         participant: "0@s.whatsapp.net"
@@ -450,7 +450,7 @@ function getBotName() {
         const { getBotName } = require('./setbot');
         return getBotName();
     } catch (error) {
-        return 'JUNE-MD'; // fallback
+        return 'ARYAN-MD'; // fallback
     }
 }
 
