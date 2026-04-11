@@ -2,48 +2,42 @@
 // Raw Output Suppression Code
 /*━━━━━━━━━━━━━━━━━━━━*/
 
+// Noise patterns to suppress from libsignal / Baileys internals
+const _noisePatterns = [
+    'Bad MAC',
+    'Session error',
+    'Failed to decrypt',
+    'Closing session: SessionEntry',
+    'SessionEntry {',
+    'Decrypted message with closed session',
+    'Closing open session in favor of',
+    'decryption failed',
+    'No keys for addr',
+];
+const _isNoise = (msg) => _noisePatterns.some(p => msg.includes(p));
+
 const originalWrite = process.stdout.write;
 process.stdout.write = function (chunk, encoding, callback) {
-    const message = chunk.toString();
-
-    if (message.includes('Closing session: SessionEntry') || message.includes('SessionEntry {')) {
-        return;
-    }
-    if (message.includes('Bad MAC') || message.includes('Session error:') || message.includes('Failed to decrypt message')) {
-        return;
-    }
-
+    if (_isNoise(chunk.toString())) return typeof callback === 'function' ? callback() : undefined;
     return originalWrite.apply(this, arguments);
 };
 
 const originalWriteError = process.stderr.write;
 process.stderr.write = function (chunk, encoding, callback) {
-    const message = chunk.toString();
-    if (message.includes('Closing session: SessionEntry')) {
-        return;
-    }
-    if (message.includes('Bad MAC') || message.includes('Session error')) {
-        return;
-    }
+    if (_isNoise(chunk.toString())) return typeof callback === 'function' ? callback() : undefined;
     return originalWriteError.apply(this, arguments);
 };
 
 const originalLog = console.log;
 console.log = function (message, ...optionalParams) {
-
-    if (typeof message === 'string' && message.startsWith('Closing session: SessionEntry')) {
-        return;
-    }
-    
+    if (typeof message === 'string' && _isNoise(message)) return;
     originalLog.apply(console, [message, ...optionalParams]);
 };
 
 const originalConsoleError = console.error;
 console.error = function (message, ...optionalParams) {
     const msg = typeof message === 'string' ? message : String(message);
-    if (msg.includes('Bad MAC') || msg.includes('Session error') || msg.includes('Failed to decrypt')) {
-        return;
-    }
+    if (_isNoise(msg)) return;
     originalConsoleError.apply(console, [message, ...optionalParams]);
 };
 
