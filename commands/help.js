@@ -308,7 +308,7 @@ async function helpCommand(sock, chatId, message) {
     console.log('Current menu style:', menuStyle);
 
     let data = {};
-    try { data = JSON.parse(fs.readFileSync('./data/messageCount.json', 'utf8')); } catch { data = { isPublic: true }; }
+    try { data = JSON.parse(fs.readFileSync('./data/messageCount.json', 'utf8')); } catch { data = { isPublic: true }; try { fs.mkdirSync('./data', { recursive: true }); fs.writeFileSync('./data/messageCount.json', JSON.stringify(data)); } catch {} }
     
     // Create fake contact for enhanced reply
     const fkontak = createFakeContact(message);

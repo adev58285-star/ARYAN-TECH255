@@ -14,6 +14,7 @@ function loadJson(filePath) {
 }
 
 function saveJson(filePath, data) {
+    try { fs.mkdirSync(path.dirname(filePath), { recursive: true }); } catch {}
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 

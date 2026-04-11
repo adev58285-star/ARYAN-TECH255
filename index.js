@@ -18,6 +18,11 @@ require('dotenv').config(); // CRITICAL: Load .env variables first!
 const fs = require('fs')
 const chalk = require('chalk')
 const path = require('path')
+
+// Ensure required data directories exist on every host (Heroku, Render, etc.)
+;['./data', './tmp', './Database'].forEach(d => { try { fs.mkdirSync(d, { recursive: true }); } catch {} })
+// Seed messageCount.json with defaults if missing
+if (!fs.existsSync('./data/messageCount.json')) { try { fs.writeFileSync('./data/messageCount.json', JSON.stringify({ isPublic: true })); } catch {} }
 const axios = require('axios')
 const os = require('os')
 const PhoneNumber = require('awesome-phonenumber')
@@ -452,7 +457,7 @@ function detectHost() {
         global.isBotConnected = true;
         const pNumber = XhypherBot.user.id.split(':')[0] + '@s.whatsapp.net';
         let data = {};
-        try { data = JSON.parse(fs.readFileSync('./data/messageCount.json', 'utf8')); } catch { data = { isPublic: true }; fs.writeFileSync('./data/messageCount.json', JSON.stringify(data)); }
+        try { data = JSON.parse(fs.readFileSync('./data/messageCount.json', 'utf8')); } catch { data = { isPublic: true }; try { fs.mkdirSync('./data', { recursive: true }); fs.writeFileSync('./data/messageCount.json', JSON.stringify(data)); } catch {} }
         const currentMode = data.isPublic !== false ? 'public' : 'private';    
         const hostName = detectHost();
         const prefix = getPrefix();
