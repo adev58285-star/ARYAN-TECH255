@@ -451,8 +451,9 @@ function detectHost() {
 
         global.isBotConnected = true;
         const pNumber = XhypherBot.user.id.split(':')[0] + '@s.whatsapp.net';
-        let data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
-        const currentMode = data.isPublic ? 'public' : 'private';    
+        let data = {};
+        try { data = JSON.parse(fs.readFileSync('./data/messageCount.json', 'utf8')); } catch { data = { isPublic: true }; fs.writeFileSync('./data/messageCount.json', JSON.stringify(data)); }
+        const currentMode = data.isPublic !== false ? 'public' : 'private';    
         const hostName = detectHost();
         const prefix = getPrefix();
    
