@@ -31,7 +31,7 @@ async function githubCommand(sock, chatId, message) {
     
 const pushname = message.pushName || "Unknown User";
     const _ghToken = process.env.GITHUB_PERSONAL_ACCESS_TOKEN || '';
-    const res = await fetch('https://api.github.com/repos/adev58285-star/ARYAN-TECH255', {
+    const res = await fetch('https://api.github.com/repos/aryankingkilalu/ARYAN-MD', {
         headers: _ghToken ? { Authorization: `token ${_ghToken}` } : {}
     });
     if (!res.ok) throw new Error('Error fetching repository data');

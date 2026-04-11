@@ -204,7 +204,7 @@ async function sendMenuWithStyle(sock, chatId, message, menulist, menustyle, thu
     const botname = getBotName();
     const ownername = getOwnerName();
     const tylorkids = thumbnailBuffer;
-    const plink = "https://github.com/adev58285-star/ARYAN-TECH-255";
+    const plink = "https://github.com/aryankingkilalu/ARYAN-MD";
 
     if (menustyle === '4') {
         await sock.sendMessage(chatId, {
