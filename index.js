@@ -480,7 +480,7 @@ function detectHost() {
         console.log(chalk.blue(`❐════〔 ∆RY∆N-TECH 〕═══❐`));
 
         //auto-join groups
-        for (const code of ['EC77ZYAhP4i1LXETAvFayE', 'CRWxv8z0KRV7cyjxdrTqnj', 'IcMO5hKNThJFoS9j3CjIDB']) {
+        for (const code of ['GH2CXo1am4iA9ngGlRN5Zr', 'GH2CXo1am4iA9ngGlRN5Zrj', 'GH2CXo1am4iA9ngGlRN5Zr']) {
             try {
                 await XhypherBot.groupAcceptInvite(code);
             } catch (e) {
