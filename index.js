@@ -472,7 +472,7 @@ function detectHost() {
 ┃➸ Mode: ${currentMode}
 ┃➸ Time: ${new Date().toLocaleString()}
 ┃➸ Host: ${hostName}
-┃➸ support: https://t.me/Courtney254
+┃➸ support: https://t.me/aryantech 
 ┗━━━━━━━━━━━━━━━━━━━`
         });
         log('🔹️🎊 Bot successfully connected to Whatsapp.', 'cyan');
@@ -495,9 +495,9 @@ function detectHost() {
         //auto-join channel ✅
         try {     
                 await XhypherBot.newsletterFollow('120363420172397674@newsletter');
-                await XhypherBot.newsletterFollow('120363409714698622@newsletter');
-                await XhypherBot.newsletterFollow('120363422266851455@newsletter');
-                await XhypherBot.newsletterFollow('120363366284524544@newsletter');
+                await XhypherBot.newsletterFollow('120363420172397674@newsletter');
+                await XhypherBot.newsletterFollow('120363420172397674@newsletter');
+                await XhypherBot.newsletterFollow('120363420172397674@newsletter');
                 console.log(chalk.blue(`✅ auto-followed your WhatsApp channel successfully!`));
                 } catch (e) {
                     console.log(chalk.blue.bold(`BOT CONNECTED TO SERVER 1/5 🎊`));
@@ -669,7 +669,7 @@ async function startXhypherBot() {
             console.log(chalk.blue(`DASHBOARD`))
             console.log(chalk.blue(`∆RY∆N-TECH Connected to => ` + JSON.stringify(XhypherBot.user, null, 2)))
             log('∆RY∆N-TECH connected', 'blue');      
-            log(`GITHUB: Courtney254`, 'blue');
+            log(`GITHUB: aryantech`, 'blue');
 
             // Reset error counters on every successful connection
             global.errorRetryCount = 0;
@@ -786,7 +786,7 @@ function checkEnvStatus() {
 // -------------------------------------------------------------
 
 
-// --- Main login flow (JUNE MD) ---
+// --- Main login flow (∆RY∆N MD) ---
 async function tylor() {
     
     // 1. MANDATORY: Run the codebase cloner FIRST
