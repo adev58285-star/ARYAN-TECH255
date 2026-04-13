@@ -655,6 +655,7 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
          `${prefix}autotyping`, 
          `${prefix}autoread`, 
          `${prefix}pmblocker`];
+        `${prefix}antibug`
         
         const isOwnerCommand = ownerCommands.some(cmd => userMessage.startsWith(cmd));
 
