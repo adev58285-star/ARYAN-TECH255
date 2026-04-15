@@ -1,4 +1,4 @@
-# WhatsApp Bot - TRUTH MD
+# WhatsApp Bot - ∆RY∆N MD
 
 ## Overview
 This is a WhatsApp bot built with Node.js and the Baileys library. It provides a wide range of commands for group management, fun features, utilities, and automated responses.
