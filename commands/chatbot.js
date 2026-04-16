@@ -72,9 +72,12 @@ async function handleChatbotCommand(sock, chatId, message, match) {
 }
 
 // MAIN RESPONSE
-async function handleChatbotResponse(sock, chatId, message, userMessage, senderId) {
+async function handleChatbotResponse(sock, chatId, message, userMessage, senderId, isOwner = false) {
     const data = loadUserGroupData();
     if (!data.chatbot[chatId]) return;
+
+    // Never respond to the owner or the bot itself
+    if (isOwner || message.key.fromMe) return;
 
     const botNumber = sock.user.id.split(':')[0] + '@s.whatsapp.net';
     const isPrivateChat = !chatId.endsWith('@g.us');

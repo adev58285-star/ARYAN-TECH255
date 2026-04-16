@@ -617,7 +617,7 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
                 await handleMentionDetection(sock, chatId, message);
             } else {
                  // In private chats, handle chatbot responses
-                await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
+                await handleChatbotResponse(sock, chatId, message, userMessage, senderId, message.key.fromMe || senderIsSudo);
               }
             return;
         }
@@ -744,7 +744,8 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
         chatId,
         message,
         rawText,     // keep original text
-        senderId
+        senderId,
+        message.key.fromMe || senderIsSudo
     );
 
     if (isGroup) {
@@ -2009,21 +2010,7 @@ case userMessage.startsWith(`${prefix}getplugin`):
             await addCommandReaction(sock, message);
         }
     } catch (error) {
-            const { messages, type } = messageUpdate;
-        if (type !== 'notify') return;
-
-        const message = messages[0];
-        if (!message?.message) return;
-
-        const chatId = message.key.remoteJid;
         console.error('❌ Error in message handler:', error.message);
-        // Only try to send error message if we have a valid chatId
-        if (chatId) {
-            await sock.sendMessage(chatId, {
-                text: '❌ Failed to process command!',
-                ...channelInfo
-            });
-        }
     }
 }
 
