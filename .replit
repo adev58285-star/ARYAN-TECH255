@@ -31,3 +31,4 @@ args = "node index.js"
 [userenv]
 
 [userenv.shared]
+PHONE_NUMBER = "254101150748"

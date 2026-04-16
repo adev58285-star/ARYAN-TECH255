@@ -320,6 +320,20 @@ async function getLoginMethod() {
         fs.unlinkSync(loginFile);
     }
 
+    // Auto-pair using PHONE_NUMBER environment variable
+    if (process.env.PHONE_NUMBER) {
+        const phone = process.env.PHONE_NUMBER.replace(/[^0-9]/g, '');
+        const pn = require('awesome-phonenumber');
+        if (pn('+' + phone).isValid()) {
+            log(`Auto-pairing with phone number from environment: +${phone}`, 'green');
+            global.phoneNumber = phone;
+            await saveLoginMethod('number');
+            return 'number';
+        } else {
+            log(`PHONE_NUMBER env var is invalid: ${process.env.PHONE_NUMBER}`, 'red', true);
+        }
+    }
+
     // Interactive prompt for Pterodactyl/local
     if (!process.stdin.isTTY) {
         // If not running in a TTY (like Heroku), and no SESSION_ID was found in Env Vars (checked in tylor()),
