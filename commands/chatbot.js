@@ -128,34 +128,18 @@ async function handleChatbotResponse(sock, chatId, message, userMessage, senderI
 // AI RESPONSE (SMART MEMORY)
 async function getAIResponse(userMessage, context) {
     try {
-        const prompt = `
-You are a smart WhatsApp chatbot.
+        const prompt = `You are a smart WhatsApp chatbot assistant named ∆RY∆N-TECH. Answer clearly and helpfully. Use Swahili or English depending on what the user writes. Be short but helpful. Previous messages: ${context.history.slice(-5).join(' | ')}. User says: ${userMessage}`;
 
-RULES:
-- Answer clearly based on the question
-- Use Swahili or English depending on user
-- Be short but helpful
-- Use previous messages for context
-- If unclear, ask
+        const res = await fetch("https://text.pollinations.ai/" + encodeURIComponent(prompt), {
+            headers: { 'Accept': 'text/plain' }
+        });
 
-Chat history:
-${context.history.join('\n')}
+        if (!res.ok) return null;
 
-User info:
-${JSON.stringify(context.userInfo)}
+        const text = await res.text();
+        if (!text || text.trim().length === 0) return null;
 
-User:
-${userMessage}
-
-Reply:
-        `.trim();
-
-        const res = await fetch("https://api.dreaded.site/api/chatgpt?text=" + encodeURIComponent(prompt));
-        const data = await res.json();
-
-        if (!data.success || !data.result) return null;
-
-        return data.result.trim();
+        return text.trim();
 
     } catch (e) {
         console.log("AI ERROR:", e);
