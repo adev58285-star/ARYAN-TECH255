@@ -132,10 +132,7 @@ const {
  setGroupPhoto 
  } = require('./commands/groupmanage');
  
-const { 
- handleAntilinkCommand, 
- handleLinkDetection 
- } = require('./commands/antilink');
+const { handleAntilinkCommand } = require('./commands/antilink');
 
 const { 
  handleAntitagCommand, 
