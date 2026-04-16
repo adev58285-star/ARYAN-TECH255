@@ -118,18 +118,20 @@ async function storeMessage(sock, message) {
 
         const sender = message.key.participant || message.key.remoteJid;
 
+        const hasKey = (obj) => obj && obj.mediaKey && obj.mediaKey.length > 0;
+
         // Detect content (including view-once wrappers)
         const viewOnceContainer = message.message?.viewOnceMessageV2?.message || message.message?.viewOnceMessage?.message;
         if (viewOnceContainer) {
             // unwrap view-once content
-            if (viewOnceContainer.imageMessage) {
+            if (viewOnceContainer.imageMessage && hasKey(viewOnceContainer.imageMessage)) {
                 mediaType = 'image';
                 content = viewOnceContainer.imageMessage.caption || '';
                 const buffer = await downloadContentFromMessage(viewOnceContainer.imageMessage, 'image');
                 mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}.jpg`);
                 await writeFile(mediaPath, buffer);
                 isViewOnce = true;
-            } else if (viewOnceContainer.videoMessage) {
+            } else if (viewOnceContainer.videoMessage && hasKey(viewOnceContainer.videoMessage)) {
                 mediaType = 'video';
                 content = viewOnceContainer.videoMessage.caption || '';
                 const buffer = await downloadContentFromMessage(viewOnceContainer.videoMessage, 'video');
@@ -144,27 +146,35 @@ async function storeMessage(sock, message) {
         } else if (message.message?.imageMessage) {
             mediaType = 'image';
             content = message.message.imageMessage.caption || '';
-            const buffer = await downloadContentFromMessage(message.message.imageMessage, 'image');
-            mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}.jpg`);
-            await writeFile(mediaPath, buffer);
+            if (hasKey(message.message.imageMessage)) {
+                const buffer = await downloadContentFromMessage(message.message.imageMessage, 'image');
+                mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}.jpg`);
+                await writeFile(mediaPath, buffer);
+            }
         } else if (message.message?.stickerMessage) {
             mediaType = 'sticker';
-            const buffer = await downloadContentFromMessage(message.message.stickerMessage, 'sticker');
-            mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}.webp`);
-            await writeFile(mediaPath, buffer);
+            if (hasKey(message.message.stickerMessage)) {
+                const buffer = await downloadContentFromMessage(message.message.stickerMessage, 'sticker');
+                mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}.webp`);
+                await writeFile(mediaPath, buffer);
+            }
         } else if (message.message?.videoMessage) {
             mediaType = 'video';
             content = message.message.videoMessage.caption || '';
-            const buffer = await downloadContentFromMessage(message.message.videoMessage, 'video');
-            mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}.mp4`);
-            await writeFile(mediaPath, buffer);
+            if (hasKey(message.message.videoMessage)) {
+                const buffer = await downloadContentFromMessage(message.message.videoMessage, 'video');
+                mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}.mp4`);
+                await writeFile(mediaPath, buffer);
+            }
         } else if (message.message?.audioMessage) {
             mediaType = 'audio';
-            const mime = message.message.audioMessage.mimetype || '';
-            const ext = mime.includes('mpeg') ? 'mp3' : (mime.includes('ogg') ? 'ogg' : 'mp3');
-            const buffer = await downloadContentFromMessage(message.message.audioMessage, 'audio');
-            mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}.${ext}`);
-            await writeFile(mediaPath, buffer);
+            if (hasKey(message.message.audioMessage)) {
+                const mime = message.message.audioMessage.mimetype || '';
+                const ext = mime.includes('mpeg') ? 'mp3' : (mime.includes('ogg') ? 'ogg' : 'mp3');
+                const buffer = await downloadContentFromMessage(message.message.audioMessage, 'audio');
+                mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}.${ext}`);
+                await writeFile(mediaPath, buffer);
+            }
         }
 
         messageStore.set(messageId, {
