@@ -376,6 +376,7 @@ const updateCommand = require('./commands/update');
 const removebgCommand = require('./commands/removebg');
 const { reminiCommand } = require('./commands/remini');
 const { igsCommand } = require('./commands/igs');
+const { antistickerCommand, handleAntistickerDetection } = require('./commands/antisticke');
 /*━━━━━━━━━━━━━━━━━━━━*/
 
 /*━━━━━━━━━━━━━━━━━━━━*/
@@ -585,6 +586,11 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
             await handleBadwordDetection(sock, chatId, message, userMessage, senderId);
             
             await Antilink(message, sock);
+        }
+
+        // Anti-sticker detection
+        if (isGroup) {
+            await handleAntistickerDetection(sock, chatId, message, senderId);
         }
 
         // PM blocker: block non-owner DMs when enabled (do not ban)
@@ -1132,6 +1138,12 @@ case userMessage.startsWith(`${prefix}pair`):
                 }
                 await handleAntilinkCommand(sock, chatId, userMessage, senderId, isSenderAdmin, message);
                 break;
+
+            case userMessage.startsWith(`${prefix}antisticker`):
+                await antistickerCommand(sock, chatId, message, userMessage, senderId);
+                commandExecuted = true;
+                break;
+
             case userMessage.startsWith(`${prefix}antitag`):
                 if (!isGroup) {
                     await sock.sendMessage(chatId, {

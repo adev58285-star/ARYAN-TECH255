@@ -93,7 +93,7 @@ async function urlCommand(sock, chatId, message) {
         }
 
         await sock.sendMessage(chatId, { 
-            text: ''
+            text: '⏳ Uploading media, please wait...'
         }, { quoted: message });
 
         let url = '';
