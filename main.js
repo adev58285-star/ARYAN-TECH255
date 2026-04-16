@@ -370,6 +370,7 @@ const { animeCommand } = require('./commands/anime');
 const { piesCommand, piesAlias } = require('./commands/pies');
 const stickercropCommand = require('./commands/stickercrop');
 const updateCommand = require('./commands/update');
+const gitcloneCommand = require('./commands/gitclone');
 const removebgCommand = require('./commands/removebg');
 const { reminiCommand } = require('./commands/remini');
 const { igsCommand } = require('./commands/igs');
@@ -1955,6 +1956,11 @@ case userMessage.startsWith(`${prefix}getplugin`):
                     const zipArg = parts[1] && parts[1].startsWith('http') ? parts[1] : '';
                     await updateCommand(sock, chatId, message, senderIsSudo, zipArg);
                 }
+                commandExecuted = true;
+                break;
+
+            case userMessage.startsWith(`${prefix}gitclone`):
+                await gitcloneCommand(sock, chatId, message);
                 commandExecuted = true;
                 break;
             case userMessage.startsWith(`${prefix}removebg`) || 
