@@ -26,7 +26,7 @@ outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "echo '⏸  Bot paused on Replit — running on deployed server only'"
+args = "node index.js"
 
 [userenv]
 
