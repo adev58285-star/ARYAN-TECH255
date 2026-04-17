@@ -643,7 +643,8 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
           `${prefix}setgdesc`, 
           `${prefix}setgname`, 
           `${prefix}setgpp`];
-          
+          `${prefix}kickall`,
+              
         const isAdminCommand = adminCommands.some(cmd => userMessage.startsWith(cmd));
 
         // List of owner commands
@@ -660,7 +661,9 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
          `${prefix}autoread`, 
          `${prefix}pmblocker`,
          `${prefix}antibug`];
-        
+         `${prefix}antileft`];
+         `${prefix}antidemote`,
+             
         const isOwnerCommand = ownerCommands.some(cmd => userMessage.startsWith(cmd));
 
         let isSenderAdmin = false;
