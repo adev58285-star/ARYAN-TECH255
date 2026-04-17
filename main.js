@@ -646,7 +646,7 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
 
         const isAdminCommand = adminCommands.some(cmd => userMessage.startsWith(cmd));
 
-        // List of owner commands
+         // List of owner commands
         const ownerCommands = [
          `${prefix}mode`, 
          `${prefix}autostatus`, 
@@ -658,9 +658,9 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
          `${prefix}autoreact`, 
          `${prefix}autotyping`, 
          `${prefix}autoread`, 
-         `${prefix}pmblocker`,
-         `${prefix}antibug`]`,
-             
+         `${prefix}pmblocker`];
+        `${prefix}antibug`
+        
         const isOwnerCommand = ownerCommands.some(cmd => userMessage.startsWith(cmd));
 
         let isSenderAdmin = false;
