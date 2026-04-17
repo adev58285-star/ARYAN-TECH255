@@ -658,15 +658,24 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
          `${prefix}autoreact`, 
          `${prefix}autotyping`, 
          `${prefix}autoread`, 
-         `${prefix}pmblocker`];
-        `${prefix}antibug`
+         `${prefix}pmblocker`,
+         `${prefix}antibug`];
         
         const isOwnerCommand = ownerCommands.some(cmd => userMessage.startsWith(cmd));
 
         let isSenderAdmin = false;
         let isBotAdmin = false;
 
-        // Check admin status only for admin commands in groups
+        // Block group-only admin commands when used in DMs
+        if (isAdminCommand && !isGroup) {
+            await sock.sendMessage(chatId, {
+                text: '❌ This command can only be used in groups.',
+                ...channelInfo
+            }, { quoted: message });
+            return;
+        }
+
+        // Check admin status for admin commands in groups
         if (isGroup && isAdminCommand) {
             const adminStatus = await isAdmin(sock, chatId, senderId, message);
             isSenderAdmin = adminStatus.isSenderAdmin;
@@ -1115,6 +1124,10 @@ case userMessage.startsWith(`${prefix}pair`):
                 }
                 break;
             case userMessage.startsWith(`${prefix}tag`):
+                if (!isGroup) {
+                    await sock.sendMessage(chatId, { text: '❌ This command can only be used in groups.', ...channelInfo }, { quoted: message });
+                    return;
+                }
                 const messageText = rawText.slice(4).trim();  // use rawText here, not userMessage
                 const replyMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage || null;
                 await tagCommand(sock, chatId, senderId, messageText, replyMessage, message);
