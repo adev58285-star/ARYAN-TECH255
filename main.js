@@ -646,7 +646,7 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
 
         const isAdminCommand = adminCommands.some(cmd => userMessage.startsWith(cmd));
 
-          // List of owner commands
+           // List of owner commands
         const ownerCommands = [
          `${prefix}mode`, 
          `${prefix}autostatus`, 
@@ -665,7 +665,6 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
 
         let isSenderAdmin = false;
         let isBotAdmin = false;
-
         // Block group-only admin commands when used in DMs
         if (isAdminCommand && !isGroup) {
             await sock.sendMessage(chatId, {
