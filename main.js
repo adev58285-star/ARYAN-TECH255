@@ -660,7 +660,6 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
          `${prefix}autoread`, 
          `${prefix}pmblocker`];
         `${prefix}antibug`
-        `${prefix}antileft`,
         
         const isOwnerCommand = ownerCommands.some(cmd => userMessage.startsWith(cmd));
 
