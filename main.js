@@ -643,6 +643,7 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
           `${prefix}setgdesc`, 
           `${prefix}setgname`, 
           `${prefix}setgpp`];
+        `${prefix}antimentation`, 
 
         const isAdminCommand = adminCommands.some(cmd => userMessage.startsWith(cmd));
 
