@@ -626,7 +626,7 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
             return;
         }
 
-        // List of admin commands
+        / // List of admin commands
         const adminCommands = [
           `${prefix}mute`,
           `${prefix}unmute`,
@@ -643,10 +643,9 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
           `${prefix}setgdesc`, 
           `${prefix}setgname`, 
           `${prefix}setgpp`];
-        `${prefix}antimentation`, 
-
+          
         const isAdminCommand = adminCommands.some(cmd => userMessage.startsWith(cmd));
-
+                        
            // List of owner commands
         const ownerCommands = [
          `${prefix}mode`, 
