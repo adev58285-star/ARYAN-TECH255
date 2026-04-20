@@ -639,7 +639,7 @@ return decode.user && decode.server ? `${decode.user}@${decode.server}` : jid;
           `${prefix}tagnotadmin`, 
           `${prefix}hidetag`,
           `${prefix}antilink`,
-          `${prefix}antitag`, 
+          `${prefix}antimention`, 
           `${prefix}setgdesc`, 
           `${prefix}setgname`, 
           `${prefix}setgpp`];
