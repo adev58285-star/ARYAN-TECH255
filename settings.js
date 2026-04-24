@@ -18,7 +18,7 @@ const settings = {
   version: "2.7.6",
   updateBranch: 'main',
   updateZipToken: '',
-  updateZipUrl: "https://github.com/dot-666/x/archive/refs/heads/main.zip",
+  updateZipUrl: "https://github.com/adev58285-star/ARYAN-TECH255/archive/refs/heads/main.zip",
   timezone: 'Africa/Nairobi',
 };
 
