@@ -1,148 +1,59 @@
-const path = require('path');
 const fs = require('fs');
+const path = require('path');
 const settings = require("../settings");
+const os = require("os");
 
-// Import functions from other modules
-const { getBotName } = require('./setbot');
-const { applyWatermark } = require('./setwatermark');
+const detectPlatform = () => {
+  if (process.env.DYNO) return "☁️ Heroku";
+  if (process.env.RENDER) return "⚡ Render";
+  if (process.env.PREFIX && process.env.PREFIX.includes("termux")) return "📱 Termux";
+  if (process.env.PORTS && process.env.CYPHERX_HOST_ID) return "🌀 CypherX Platform";
+  if (process.env.P_SERVER_UUID) return "🖥️ Panel";
+  if (process.env.LXC) return "🐦‍⬛ Linux Container (LXC)";
+  
+  switch (os.platform()) {
+    case "win32": return "🪟 Windows";
+    case "darwin": return "🍎 macOS";
+    case "linux": return "🐧 Linux";
+    default: return "❓ Unknown";
+  }
+};
 
-// Default menu image URL (same as in setmenuimage.js)
-const DEFAULT_MENU_IMAGE = 'https://res.cloudinary.com/dptzpfgtm/image/upload/v1763085792/whatsapp_uploads/qiy0ytyqcbebyacrgbju.jpg';
+const { createFakeContact } = require('../lib/fakeContact');
+function formatUptime(uptime) {
+  const seconds = Math.floor(uptime / 1000);
+  const days = Math.floor(seconds / (24 * 60 * 60));
+  const hours = Math.floor((seconds % (24 * 60 * 60)) / (60 * 60));
+  const minutes = Math.floor((seconds % (60 * 60)) / 60);
+  const secs = seconds % 60;
 
-// Function to get current menu image (either custom or default)
-function getMenuImage() {
-    try {
-        const assetsDir = path.join(__dirname, '../assets');
-        const menuImagePath = path.join(assetsDir, 'menu.jpg');
-        
-        if (fs.existsSync(menuImagePath)) {
-            // Return the local file as buffer for better compatibility
-            return {
-                buffer: fs.readFileSync(menuImagePath),
-                isLocal: true
-            };
-        } else {
-            return {
-                url: DEFAULT_MENU_IMAGE,
-                isLocal: false
-            };
-        }
-    } catch (error) {
-        console.error('Error getting menu image:', error);
-        return {
-            url: DEFAULT_MENU_IMAGE,
-            isLocal: false
-        };
-    }
+  const parts = [];
+  if (days > 0) parts.push(`${days} day${days > 1 ? 's' : ''}`);
+  if (hours > 0) parts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
+  if (minutes > 0) parts.push(`${minutes} minute${minutes > 1 ? 's' : ''}`);
+  if (secs > 0 || parts.length === 0) parts.push(`${secs} second${secs > 1 ? 's' : ''}`);
+
+  return parts.join(', ');
 }
 
-// Create fake contact for enhanced replies (similar to setmenuimage.js)
-function createFakeContact(message) {
-    return {
-        key: {
-            participants: "0@s.whatsapp.net",
-            remoteJid: "status@broadcast",
-            fromMe: false,
-            id: "whatsapp bot"
-        },
-        message: {
-            contactMessage: {
-                vcard: `BEGIN:VCARD\nVERSION:3.0\nN:ARYAN;TECH;;;\nFN:∆RY∆N-TECH\nitem1.TEL;waid=${message.key.participant?.split('@')[0] || message.key.remoteJid.split('@')[0]}:${message.key.participant?.split('@')[0] || message.key.remoteJid.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`
-            }
-        },
-        participant: "0@s.whatsapp.net"
-    };
-}
+// Store bot start time
+const botStartTime = Date.now();
 
 async function aliveCommand(sock, chatId, message) {
-    try {
-        const fake = createFakeContact(message);
-        
-        // Get dynamic content
-        const botName = getBotName();
-        const menuImage = getMenuImage();
-        
-        // Create base message with watermark applied
-        const baseMessage = 
-            `*${botName}*\n\n` +
-            `*VERSION:* ${settings.version}\n` +
-            `*STATUS:* Online\n` +
-            `*MODE:* Public\n\n` +
-            `TYPE *.menu* for full commands\n\n` +
-            `🌙 ${botName} is alive 🏂`;
-        
-        // Apply watermark to the message
-        const watermarkedMessage = applyWatermark(baseMessage);
+  try {
+    const uptime = Date.now() - botStartTime;
+    const formattedUptime = formatUptime(uptime);
+    const hostName = detectPlatform();
 
-        // Send message with image
-        if (menuImage.isLocal) {
-            // Send with local image buffer
-            await sock.sendMessage(chatId, {
-                image: menuImage.buffer,
-                caption: watermarkedMessage,
-                contextInfo: {
-                    forwardingScore: 99,
-                    remoteJid: "status@broadcast",
-                    isForwarded: false, 
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '',
-                        newsletterName: ' MD',
-                        serverMessageId: -1
-                    }
-                }
-            }, { quoted: fake });
-        } else {
-            // Send with image URL
-            await sock.sendMessage(chatId, {
-                image: { url: menuImage.url },
-                caption: watermarkedMessage,
-                contextInfo: {
-                    forwardingScore: 99,
-                    remoteJid: "status@broadcast",
-                    isForwarded: false, 
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '',
-                        newsletterName: ' MD',
-                        serverMessageId: -1
-                    }
-                }
-            }, { quoted: fake });
-        }
-        
-        // Send audio
-        await sock.sendMessage(chatId, {
-            audio: { url: "https://files.catbox.moe/qpnk2b.mp3" },
-            mimetype: 'audio/mp4',
-            ptt: false,
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: false,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '',
-                    newsletterName: '',
-                    serverMessageId: -1
-                }
-            }
-        }, { quoted: fake });
-        
-    } catch (error) {
-        console.error('Error in alive command:', error);
-        
-        // Fallback to simple message if there's an error
-        const fake = createFakeContact(message);
-        await sock.sendMessage(chatId, { 
-            text: 'Bot is alive and running!',
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: false,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '',
-                    newsletterName: '',
-                    serverMessageId: -1
-                }
-            }
-        }, { quoted: fake });
-    }
+  const message1 = `⏰ Running on [${hostName}] for:\n *${formattedUptime}*`;
+
+    // Fake contact for quoting
+        // send uptime
+    await sock.sendMessage(chatId, { text: message1 }, { quoted: createFakeContact(message) });
+
+  } catch (error) {
+    console.error('Error in alive command:', error);
+  }
 }
 
 module.exports = aliveCommand;

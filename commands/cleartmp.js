@@ -1,7 +1,9 @@
 const fs = require('fs');
 const path = require('path');
+const { isSudo } = require('../lib/index');
 
 // Function to clear a single directory
+const { createFakeContact } = require('../lib/fakeContact');
 function clearDirectory(dirPath) {
     try {
         if (!fs.existsSync(dirPath)) {
@@ -48,12 +50,12 @@ async function clearTmpDirectory() {
 // Function to handle manual command
 async function clearTmpCommand(sock, chatId, msg) {
     try {
-        // Check if user is owner
-        const isOwner = msg.key.fromMe;
+        const senderId = msg.key.participant || msg.key.remoteJid;
+        const isOwner = msg.key.fromMe || await isSudo(senderId);
         if (!isOwner) {
             await sock.sendMessage(chatId, { 
                 text: '❌ This command is only available for the owner!' 
-            });
+            }, { quoted: createFakeContact(message) });
             return;
         }
 
@@ -62,18 +64,18 @@ async function clearTmpCommand(sock, chatId, msg) {
         if (result.success) {
             await sock.sendMessage(chatId, { 
                 text: `✅ ${result.message}` 
-            });
+            }, { quoted: createFakeContact(message) });
         } else {
             await sock.sendMessage(chatId, { 
                 text: `❌ ${result.message}` 
-            });
+            }, { quoted: createFakeContact(message) });
         }
 
     } catch (error) {
         console.error('Error in cleartmp command:', error);
         await sock.sendMessage(chatId, { 
             text: '❌ Failed to clear temporary files!' 
-        });
+        }, { quoted: createFakeContact(message) });
     }
 }
 

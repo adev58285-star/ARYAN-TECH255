@@ -1,149 +1,161 @@
-const axios = require("axios");
-
- async function aiCommand( sock, chatId, message ) {
-        try {
- await sock.sendMessage(chatId, {
-            react: { text: '🛰️', key: message.key }
-        }); 
-            
- const text = message.message?.conversation || message.message?.extendedTextMessage?.text;
-       
-           if (!text) {
- await sock.sendMessage(chatId, { 
-                text: "Please provide a question after .gpt or .gemini\n\nExample: .gpt write a basic html code"
-            });
-        }
-  const res = await axios.get(    `https://apiskeith.top/ai/chatgpt4?q=${encodeURIComponent(text)}`
-            );
- if (!res.data || !res.data.result || !res.data.result.text){
- await sock.sendMessage(chatId, { 
-                text: "Error occurrd"},{ quoted: message
-            });
-        }
-  
- await sock.sendMessage(chatId, {
-                text: res.data.result.text
-            },{ quoted: message });
-  
-  await sock.sendMessage(chatId, {
-            react: { text: '✅', key: message.key }
-        });            
-            
-        } catch (err) {
-            console.error(err);
-   await sock.sendMessage(chatId, { 
-                text: "❎ Error occured"
-            },{ quoted: message });
-            
-        }
-    };
-
-module.exports = aiCommand;
-
-
-
-
-
-
-/*
 const axios = require('axios');
-const fetch = require('node-fetch');
 
+const { createFakeContact } = require('../lib/fakeContact');
+/**
+ * AI Command Handler
+ * @param {object} sock - WhatsApp socket
+ * @param {string} chatId - Chat ID
+ * @param {object} message - Message object
+ */
 async function aiCommand(sock, chatId, message) {
     try {
-        const text = message.message?.conversation || message.message?.extendedTextMessage?.text;
-        
+        const text = extractMessageText(message);
+
         if (!text) {
-            return await sock.sendMessage(chatId, { 
-                text: "Please provide a question after .gpt or .gemini\n\nExample: .gpt write a basic html code"
-            });
+            return sendPromptMessage(sock, chatId, message);
         }
 
-        // Get the command and query
-        const parts = text.split(' ');
-        const command = parts[0].toLowerCase();
-        const query = parts.slice(1).join(' ').trim();
+        const { command, query } = parseCommand(text);
 
         if (!query) {
-            return await sock.sendMessage(chatId, { 
-                text: "Please provide a question after .gpt or .gemini"
-            });
+            return sendEmptyQueryMessage(sock, chatId, message);
         }
 
-        try {
-            // Show processing message
-            await sock.sendMessage(chatId, {
-                react: { text: '🤖', key: message.key }
-            });
-
-            if (command === '.gpt') {
-                // Call the GPT API
-                const response = await axios.get(`https://api.dreaded.site/api/chatgpt?text=${encodeURIComponent(query)}`);
-                
-                if (response.data && response.data.success && response.data.result) {
-                    const answer = response.data.result.prompt;
-                    await sock.sendMessage(chatId, {
-                        text: answer
-                    }, {
-                        quoted: message
-                    });
-                    
-                } else {
-                    throw new Error('Invalid response from API');
-                }
-            } else if (command === '.gemini') {
-                const apis = [
-                    `https://vapis.my.id/api/gemini?q=${encodeURIComponent(query)}`,
-                    `https://api.siputzx.my.id/api/ai/gemini-pro?content=${encodeURIComponent(query)}`,
-                    `https://api.ryzendesu.vip/api/ai/gemini?text=${encodeURIComponent(query)}`,
-                    `https://api.dreaded.site/api/gemini2?text=${encodeURIComponent(query)}`,
-                    `https://api.giftedtech.my.id/api/ai/geminiai?apikey=gifted&q=${encodeURIComponent(query)}`,
-                    `https://api.giftedtech.my.id/api/ai/geminiaipro?apikey=gifted&q=${encodeURIComponent(query)}`
-                ];
-
-                for (const api of apis) {
-                    try {
-                        const response = await fetch(api);
-                        const data = await response.json();
-
-                        if (data.message || data.data || data.answer || data.result) {
-                            const answer = data.message || data.data || data.answer || data.result;
-                            await sock.sendMessage(chatId, {
-                                text: answer
-                            }, {
-                                quoted: message
-                            });
-                            
-                            return;
-                        }
-                    } catch (e) {
-                        continue;
-                    }
-                }
-                throw new Error('All Gemini APIs failed');
-            }
-        } catch (error) {
-            console.error('API Error:', error);
-            await sock.sendMessage(chatId, {
-                text: "❌ Failed to get response. Please try again later.",
-                contextInfo: {
-                    mentionedJid: [message.key.participant || message.key.remoteJid],
-                    quotedMessage: message.message
-                }
-            });
-        }
+        await processAIRequest(sock, chatId, message, query);
     } catch (error) {
-        console.error('AI Command Error:', error);
-        await sock.sendMessage(chatId, {
-            text: "❌ An error occurred. Please try again later.",
-            contextInfo: {
-                mentionedJid: [message.key.participant || message.key.remoteJid],
-                quotedMessage: message.message
-            }
-        });
+        logError('AI Command Error', error);
+        return sendErrorMessage(sock, chatId, message);
     }
 }
 
-module.exports = aiCommand; 
+/**
+ * Extract text from message object
+ */
+function extractMessageText(message) {
+    return (
+        message.message?.conversation ||
+        message.message?.extendedTextMessage?.text ||
+        message.text ||
+        null
+    );
+}
 
-*/
+/**
+ * Parse command and query from text
+ */
+function parseCommand(text) {
+    const [command, ...rest] = text.trim().split(/\s+/);
+    return {
+        command: command?.toLowerCase() || '',
+        query: rest.join(' ').trim(),
+    };
+}
+
+/**
+ * Send initial prompt message
+ */
+async function sendPromptMessage(sock, chatId, message) {
+    const promptText =
+        "⚠️ Please provide a question after !gpt\n\n" +
+        "Example: !gpt What is quantum computing?";
+    return sock.sendMessage(chatId, { text: promptText }, { quoted: createFakeContact(message) });
+}
+
+/**
+ * Send empty query message
+ */
+async function sendEmptyQueryMessage(sock, chatId, message) {
+    const text =
+        "❌ No query detected.\nExample: !gpt What is quantum computing?";
+    return sock.sendMessage(chatId, { text }, { quoted: createFakeContact(message) });
+}
+
+/**
+ * Send generic error message
+ */
+async function sendErrorMessage(sock, chatId, message) {
+    return sock.sendMessage(
+        chatId,
+        {
+            text: "❌ An error occurred. Please try again later.",
+            contextInfo: {
+                mentionedJid: [message.key.participant || message.key.remoteJid],
+                quotedMessage: message.message,
+            },
+        },
+        { quoted: createFakeContact(message) }
+    );
+}
+
+/**
+ * Process AI request
+ */
+async function processAIRequest(sock, chatId, message, query) {
+    // Show processing indicator
+    await sock.sendMessage(chatId, {
+        react: { text: '🤖', key: message.key },
+    });
+
+    try {
+        await handleAIAPIRequest(sock, chatId, message, query);
+    } catch (error) {
+        logError('API Processing Error', error);
+        await sendAPIErrorMessage(sock, chatId, message, error);
+    }
+}
+
+/**
+ * Handle AI API request
+ */
+async function handleAIAPIRequest(sock, chatId, message, query) {
+    const apiUrl = `https://iamtkm.vercel.app/ai/gpt5?apikey=tkm&text=${encodeURIComponent(
+        query
+    )}`;
+
+    const { data } = await axios.get(apiUrl).catch((err) => {
+        throw err;
+    });
+
+    const replyText = data?.result || null;
+
+    if (replyText) {
+        return sock.sendMessage(chatId, { text: replyText }, { quoted: createFakeContact(message) });
+    }
+
+    throw new Error('No valid response from AI API');
+}
+
+/**
+ * Send API error message
+ */
+async function sendAPIErrorMessage(sock, chatId, message, error) {
+    const errorMessage =
+        error.response?.status === 429
+            ? "❌ Rate limit exceeded. Please try again later."
+            : "❌ Failed to reach AI API.";
+
+    return sock.sendMessage(
+        chatId,
+        {
+            text: errorMessage,
+            contextInfo: {
+                mentionedJid: [message.key.participant || message.key.remoteJid],
+                quotedMessage: message.message,
+            },
+        },
+        { quoted: createFakeContact(message) }
+    );
+}
+
+/**
+ * Log error with context
+ */
+function logError(context, error) {
+    console.error(`[${context}]`, {
+        message: error.message,
+        stack: error.stack,
+        response: error.response?.data || null,
+    });
+}
+
+module.exports = aiCommand;

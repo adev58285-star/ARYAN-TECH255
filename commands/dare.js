@@ -1,8 +1,11 @@
 const fetch = require('node-fetch');
 
+const { createFakeContact } = require('../lib/fakeContact');
 async function dareCommand(sock, chatId, message) {
     try {
         const shizokeys = 'shizo';
+        
+        // Fetch dare text
         const res = await fetch(`https://shizoapi.onrender.com/api/texts/dare?apikey=${shizokeys}`);
         
         if (!res.ok) {
@@ -12,37 +15,31 @@ async function dareCommand(sock, chatId, message) {
         const json = await res.json();
         const dareMessage = json.result;
 
-        // Create fake contact for enhanced reply
-        const fakeContact = createFakeContact(message);
+        // Fetch a random dare image (using Unsplash API for example)
+        const imageRes = await fetch('https://i.ibb.co/305yt26/bf84f20635dedd5dde31e7e5b6983ae9.jpg');
+        const imageBuffer = await imageRes.buffer();
 
         // Send the dare message with image
-        await sock.sendMessage(chatId, { 
-            image: { url: 'https://res.cloudinary.com/dptzpfgtm/image/upload/v1763139076/whatsapp_uploads/kt4iq3jveziondd0wuoe.jpg' },
-            caption: dareMessage
-        }, { quoted: fakeContact });
-        
+        await sock.sendMessage(chatId, {
+            image: imageBuffer,
+            caption: `🎯 *DARE:*\n\n${dareMessage}`,
+            mimetype: 'image/jpeg'
+        }, { quoted: createFakeContact(message) });
+
     } catch (error) {
         console.error('Error in dare command:', error);
-        await sock.sendMessage(chatId, { text: '❌ Failed to get dare. Please try again later!' }, { quoted: message });
+        
+        // Fallback: send text only if image fails
+        try {
+            await sock.sendMessage(chatId, { 
+                text: `🎯 *DARE:*\n\n${dareMessage || '❌ Failed to get dare. Please try again later!'}` 
+            }, { quoted: createFakeContact(message) });
+        } catch (fallbackError) {
+            await sock.sendMessage(chatId, { 
+                text: '❌ Failed to get dare. Please try again later!' 
+            }, { quoted: createFakeContact(message) });
+        }
     }
-}
-
-// Create fake contact for enhanced replies
-function createFakeContact(message) {
-    return {
-        key: {
-            participants: "0@s.whatsapp.net",
-            remoteJid: "status@broadcast",
-            fromMe: false,
-            id: "whatsapp"
-        },
-        message: {
-            contactMessage: {
-                vcard: `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:whatsapp\nitem1.TEL;waid=${message.key.participant?.split('@')[0] || message.key.remoteJid.split('@')[0]}:${message.key.participant?.split('@')[0] || message.key.remoteJid.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`
-            }
-        },
-        participant: "0@s.whatsapp.net"
-    };
 }
 
 module.exports = { dareCommand };

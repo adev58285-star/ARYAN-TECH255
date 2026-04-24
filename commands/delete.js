@@ -1,6 +1,8 @@
 const isAdmin = require('../lib/isAdmin');
+const { isSudo } = require('../lib/index');
 const store = require('../lib/lightweight_store');
 
+const { createFakeContact } = require('../lib/fakeContact');
 async function deleteCommand(sock, chatId, message, senderId) {
     try {
         const isGroup = chatId.endsWith('@g.us');
@@ -8,23 +10,26 @@ async function deleteCommand(sock, chatId, message, senderId) {
         let isBotAdmin = true;
 
         if (isGroup) {
-            const adminStatus = await isAdmin(sock, chatId, senderId);
-            isSenderAdmin = adminStatus.isSenderAdmin;
-            isBotAdmin = adminStatus.isBotAdmin;
+            const isOwner = message.key.fromMe || await isSudo(senderId);
+            if (!isOwner) {
+                const adminStatus = await isAdmin(sock, chatId, senderId);
+                isSenderAdmin = adminStatus.isSenderAdmin;
+                isBotAdmin = adminStatus.isBotAdmin;
 
-            if (!isBotAdmin) {
-                await sock.sendMessage(chatId, { text: '🚫 I need to be an admin to delete messages in groups.' }, { quoted: message });
-                return;
-            }
+                if (!isBotAdmin) {
+                    await sock.sendMessage(chatId, { text: '🚫 I need to be an admin to delete messages in groups.' }, { quoted: createFakeContact(message) });
+                    return;
+                }
 
-            if (!isSenderAdmin) {
-                await sock.sendMessage(chatId, { text: '🚫 Only group admins can use the .delete command.' }, { quoted: message });
-                return;
+                if (!isSenderAdmin) {
+                    await sock.sendMessage(chatId, { text: '🚫 Only group admins can use the .delete command.' }, { quoted: createFakeContact(message) });
+                    return;
+                }
             }
         } else {
             // Private chat: only allow if sender is the chat owner
             if (senderId !== chatId) {
-                await sock.sendMessage(chatId, { text: '🚫 Only the chat owner can use the .delete command in private chats.' }, { quoted: message });
+                await sock.sendMessage(chatId, { text: '🚫 Only the chat owner can use the .delete command in private chats.' }, { quoted: createFakeContact(message) });
                 return;
             }
         }
@@ -53,7 +58,7 @@ async function deleteCommand(sock, chatId, message, senderId) {
         }
 
         if (!targetUser) {
-            await sock.sendMessage(chatId, { text: '⚠️ Please reply to a user\'s message or mention a user to delete their recent messages.' }, { quoted: message });
+            await sock.sendMessage(chatId, { text: '⚠️ Please reply to a user\'s message or mention a user to delete their recent messages.' }, { quoted: createFakeContact(message) });
             return;
         }
 
@@ -85,7 +90,7 @@ async function deleteCommand(sock, chatId, message, senderId) {
                             id: repliedMsgId,
                             participant: repliedParticipant
                         }
-                    });
+                    }, { quoted: createFakeContact(message) });
                     countArg = Math.max(0, countArg - 1);
                 } catch {}
             }
@@ -103,7 +108,7 @@ async function deleteCommand(sock, chatId, message, senderId) {
         }
 
         if (toDelete.length === 0) {
-            await sock.sendMessage(chatId, { text: '⚠️ No recent messages found for the target user.' }, { quoted: message });
+            await sock.sendMessage(chatId, { text: '⚠️ No recent messages found for the target user.' }, { quoted: createFakeContact(message) });
             return;
         }
 
@@ -118,7 +123,7 @@ async function deleteCommand(sock, chatId, message, senderId) {
                         id: m.key.id,
                         participant: msgParticipant
                     }
-                });
+                }, { quoted: createFakeContact(message) });
                 deletedCount++;
                 await new Promise(r => setTimeout(r, 300));
             } catch (e) {
@@ -128,7 +133,7 @@ async function deleteCommand(sock, chatId, message, senderId) {
 
 
     } catch (err) {
-        await sock.sendMessage(chatId, { text: '❌ Failed to delete messages.' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: '❌ Failed to delete messages.' }, { quoted: createFakeContact(message) });
     }
 }
 

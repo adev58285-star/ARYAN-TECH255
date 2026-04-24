@@ -1,13 +1,15 @@
 const axios = require('axios');
+const { isSudo } = require('../lib/index');
 
+const { createFakeContact } = require('../lib/fakeContact');
 async function getppCommand(sock, chatId, message) {
     try {
-        // Check if user is owner
-        const isOwner = message.key.fromMe; // Fixed variable name from 'msg' to 'message'
+        const senderId = message.key.participant || message.key.remoteJid;
+        const isOwner = message.key.fromMe || await isSudo(senderId);
         if (!isOwner) {
             await sock.sendMessage(chatId, { 
-                text: '😡Command only for the owner.' 
-            });
+                text: '😡 Command only for the owner.'
+            }, { quoted: createFakeContact(message) });
             return;
         }
 
@@ -25,7 +27,11 @@ async function getppCommand(sock, chatId, message) {
         if (!userToAnalyze) {
             await sock.sendMessage(chatId, { 
                 text: 'Please mention someone or reply to their message to get their profile picture🫴'
-                });
+                }, { quoted: createFakeContact(message) });
+
+            await sock.sendMessage(chatId, {
+            react: { text: '🗑️', key: message.key }
+        });
             return;
         }
 
@@ -41,15 +47,19 @@ async function getppCommand(sock, chatId, message) {
             // Send the profile picture to the chat
             await sock.sendMessage(chatId, {
                 image: { url: profilePic },
-                caption: `\n\n _🔸 hey 👋 Sucess in getting profile of: @${userToAnalyze.split('@')[0]} ✅._`,
+                caption: `\n _🔸 hey 👋 Sucess in getting profile of:-_\n @${userToAnalyze.split('@')[0]} .`,
                 mentions: [userToAnalyze]
             });
+
+            await sock.sendMessage(chatId, {
+            react: { text: '☑️', key: message.key }
+        });
 
         } catch (error) {
             console.error('⚠️Error in getpp command:', error);
             await sock.sendMessage(chatId, {
                 text: '🉐Failed to retrieve profile picture. The user might not have one set.'
-            });
+            }, { quoted: createFakeContact(message) });
         }
     } catch (error) {
         console.error('⚠️Unexpected error in getppCommand:', error);
