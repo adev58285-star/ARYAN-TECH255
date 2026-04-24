@@ -1,15 +1,15 @@
 
 /**
-* supreme
-* caspar x
+* aryan x
+* aryan x
 */
 
 const settings = {
-  packname: '✮⃝𝐒ᵘᵖʳᵉᵐᵉ',
-  author: '✮⃝𝐒ᵘᵖʳᵉᵐᵉ',
+  packname: '✮⃝aryan X',
+  author: '✮⃝aryan X',
   botName: "Aryan-Bot",
-  botOwner: '✮⃝𝐒ᵘᵖʳᵉᵐᵉ', // Your name
-  ownerNumber: process.env.OWNER_NUMBER || '254792021944', //Set your number here without + symbol, just add country code & number without any space
+  botOwner: '✮⃝aryan x', // Your name
+  ownerNumber: process.env.OWNER_NUMBER || '255637518095', //Set your number here without + symbol, just add country code & number without any space
   giphyApiKey: 'qnl7ssQChTdPjsKta2Ax2LMaGXz303tq',
   commandMode: "public",
   maxStoreMessages: 20, 
