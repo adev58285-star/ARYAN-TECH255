@@ -25,17 +25,18 @@ const messageTemplates = {
     })
 };
 
+const { createFakeContact } = require('../lib/fakeContact');
 async function textmakerCommand(sock, chatId, message, q, type) {
     try {
         if (!q) {
-            return await sock.sendMessage(chatId, messageTemplates.error("Please provide text to generate\nExample: .metallic Superstar"));
+            return await sock.sendMessage(chatId, messageTemplates.error("Please provide text to generate\nExample: .metallic Supreme"));
         }
 
         // Extract text
         const text = q.split(' ').slice(1).join(' ');
 
         if (!text) {
-            return await sock.sendMessage(chatId, messageTemplates.error("Please provide text to generate\nExample: .metallic Superstar"));
+            return await sock.sendMessage(chatId, messageTemplates.error("Please provide text to generate\nExample: .metallic Supreme"));
         }
 
         try {

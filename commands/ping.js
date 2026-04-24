@@ -1,17 +1,17 @@
-/*by superstar*/
+/*by supreme*/
 
 const os = require('os');
-const settings = require('../settings.js');
-const { getBotName } = require('./setbot');
+const { getBotName } = require('../lib/botConfig');
 
+const { createFakeContact } = require('../lib/fakeContact');
 async function pingCommand(sock, chatId, message) {
-    try {
-    let newBot = getBotName();
-    console.log(`[ ∆RY∆N-TECH ] 🏓 pingCommand executing for chatId: ${chatId}`);
+  try {
+    // Create fake quoted contact
+    const fake = createFakeContact(message);
     
     const start = Date.now();
     const sentMsg = await sock.sendMessage(chatId, {
-      text: '*🔹pong!...*'}, { quoted: message }
+      text: '*🔹pong!...*'}, { quoted: createFakeContact(message) }
     );
 
     const ping = Date.now() - start;
@@ -19,16 +19,16 @@ async function pingCommand(sock, chatId, message) {
     // Generate highly accurate and detailed 3-decimal ping
     const detailedPing = generatePrecisePing(ping);
     
-    const response = `*${newBot} Speed:* ${detailedPing} ms`;
+    const response = `*🔸 ${getBotName()} Speed: ${detailedPing} ms*`;
 
     await sock.sendMessage(chatId, {
       text: response,
       edit: sentMsg.key // Edit the original message
-    });   
+    }, { quoted: createFakeContact(message) });   
     
   } catch (error) {
     console.error('Ping error:', error);
-    await sock.sendMessage(chatId, { text: 'Failed to measure speed.' });
+    await sock.sendMessage(chatId, { text: 'Failed to measure speed.' }, { quoted: createFakeContact(message) });
   }
 }
 

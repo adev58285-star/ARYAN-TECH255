@@ -1,19 +1,20 @@
 // commands/menuSettings.js
 const fs = require('fs');
 const path = require('path');
+const isOwnerOrSudo = require('../lib/isOwner'); // ✅ corrected path
 
 // Path to store menu settings
 const MENU_SETTINGS_FILE = path.join(__dirname, '..', 'data', 'menuSettings.json');
 
 // Default menu style
-const DEFAULT_MENU_STYLE = '1';
+const DEFAULT_MENU_STYLE = '2';
 
 // Menu style descriptions
 const MENU_STYLES = {
-    '1': 'Image with caption',
+    '1': 'Document with thumbnail',
     '2': 'Simple text reply',
     '3': 'Text with external ad reply',
-    '4': 'Document with thumbnail',
+    '4': 'Image with caption',
     '5': 'Interactive message',
     '6': 'Payment request format'
 };
@@ -50,17 +51,18 @@ function getMenuStyle() {
 }
 
 /**
- * Set new menu style
+ * Set new menu style (owner/sudo only)
  * @param {string} newStyle - The new menu style to set (1-6)
+ * @param {string} userId - ID of the user requesting change
  * @returns {boolean} Success status
  */
-function setMenuStyle(newStyle) {
+function setMenuStyle(newStyle, userId) {
+    if (!isOwnerOrSudo(userId)) return false; // 🚫 restrict non-owners
+    
     try {
-        // Validate menu style
         if (!['1', '2', '3', '4', '5', '6'].includes(newStyle)) {
             return false;
         }
-        
         const currentData = JSON.parse(fs.readFileSync(MENU_SETTINGS_FILE, 'utf8'));
         currentData.menuStyle = newStyle;
         fs.writeFileSync(MENU_SETTINGS_FILE, JSON.stringify(currentData, null, 2));
@@ -91,11 +93,14 @@ function getMenuSettings() {
 }
 
 /**
- * Update menu settings
+ * Update menu settings (owner/sudo only)
  * @param {Object} settings - Settings to update
+ * @param {string} userId - ID of the user requesting change
  * @returns {boolean} Success status
  */
-function updateMenuSettings(settings) {
+function updateMenuSettings(settings, userId) {
+    if (!isOwnerOrSudo(userId)) return false; // 🚫 restrict non-owners
+    
     try {
         const currentData = getMenuSettings();
         const newData = { ...currentData, ...settings };
@@ -108,10 +113,13 @@ function updateMenuSettings(settings) {
 }
 
 /**
- * Reset menu settings to default
+ * Reset menu settings to default (owner/sudo only)
+ * @param {string} userId - ID of the user requesting reset
  * @returns {boolean} Success status
  */
-function resetMenuSettings() {
+function resetMenuSettings(userId) {
+    if (!isOwnerOrSudo(userId)) return false; // 🚫 restrict non-owners
+    
     try {
         const defaultSettings = { 
             menuStyle: DEFAULT_MENU_STYLE,
@@ -129,11 +137,14 @@ function resetMenuSettings() {
 }
 
 /**
- * Toggle specific setting
+ * Toggle specific setting (owner/sudo only)
  * @param {string} setting - Setting name to toggle
+ * @param {string} userId - ID of the user requesting toggle
  * @returns {boolean} New value of the setting
  */
-function toggleSetting(setting) {
+function toggleSetting(setting, userId) {
+    if (!isOwnerOrSudo(userId)) return false; // 🚫 restrict non-owners
+    
     try {
         const currentData = getMenuSettings();
         if (currentData.hasOwnProperty(setting)) {

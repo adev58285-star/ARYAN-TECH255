@@ -1,136 +1,89 @@
-const { getBinaryNodeChild } = require('@whiskeysockets/baileys');
+const axios = require("axios");
 
-async function joinCommand(sock, chatId, senderId, message, userMessage) {
+const { createFakeContact } = require('../lib/fakeContact');
+async function joinCommand(sock, chatId, message) {
     try {
-        // Check if user is owner/sudo
-        if (!message.key.fromMe) {
-            const { isSudo } = require('../lib/index');
-            const senderIsSudo = await isSudo(senderId);
-            if (!senderIsSudo) {
-                await sock.sendMessage(chatId, { 
-                    text: '❌ Only owner/sudo can use this command!' 
-                }, { quoted: message });
-                return;
-            }
+        // Initial reaction
+        await sock.sendMessage(chatId, { react: { text: "🔗", key: message.key } });
+
+        // Extract query from direct or quoted message
+        const text = message.message?.conversation || message.message?.extendedTextMessage?.text;
+        let query = text?.split(" ").slice(1).join(" ").trim();
+
+        const quoted = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+        if (!query && quoted) {
+            query = quoted.conversation?.trim() || quoted.extendedTextMessage?.text?.trim();
         }
 
-        // Extract invite code from message
-        const args = userMessage.split(' ');
-        if (args.length < 2) {
-            await sock.sendMessage(chatId, { 
-                text: `❌ Please provide a WhatsApp group invite link!\n\nExample: ${args[0]} https://chat.whatsapp.com/LTUlwPfLa2q38FFQ5AHLKg` 
-            }, { quoted: message });
-            return;
+        if (!query) {
+            return sock.sendMessage(chatId, {
+                text: "🔗 Please provide a WhatsApp group invite link!\n\nExample: .join https://chat.whatsapp.com/IxMbtAN4lhVEhmbb6BfAsk\nOr quote a message containing the link"
+            }, { quoted: createFakeContact(message) });
         }
 
-        const link = args[1].trim();
+        if (query.length > 200) {
+            return sock.sendMessage(chatId, { text: "📝 Link too long! Max 200 chars." }, { quoted: createFakeContact(message) });
+        }
+
+        // Extract invite code
         let inviteCode;
-        
-        // Extract invite code from different link formats
-        if (link.includes('chat.whatsapp.com/')) {
-            // Extract code from https://chat.whatsapp.com/CODE
-            const parts = link.split('/');
-            inviteCode = parts[parts.length - 1];
-        } else if (link.startsWith('https://whatsapp.com/')) {
-            // Extract code from https://whatsapp.com/group/CODE
-            const parts = link.split('/');
-            inviteCode = parts[parts.length - 1];
-        } else if (/^[A-Za-z0-9]{22}$/.test(link)) {
-            // Direct invite code
-            inviteCode = link;
+        if (query.includes("chat.whatsapp.com/")) {
+            inviteCode = query.split("chat.whatsapp.com/")[1].split(/[?/]/)[0];
+        } else if (/^[A-Za-z0-9]{22}$/.test(query)) {
+            inviteCode = query;
         } else {
-            await sock.sendMessage(chatId, { 
-                text: '❌ Invalid WhatsApp group link format!\n\nPlease provide a valid link like:\nhttps://chat.whatsapp.com/LTUlwPfLa2q38FFQ5AHLKg' 
-            }, { quoted: message });
-            return;
+            return sock.sendMessage(chatId, {
+                text: "❌ Invalid WhatsApp group link format!\n\nProvide a link like: https://chat.whatsapp.com/IxMbtAN4lhVEhmbb6BfAsk\nOr just the code: IxMbtAN4lhVEhmbb6BfAsk"
+            }, { quoted: createFakeContact(message) });
         }
 
-        // Validate invite code format
-        if (!inviteCode || !/^[A-Za-z0-9]{22}$/.test(inviteCode)) {
-            await sock.sendMessage(chatId, { 
-                text: '❌ Invalid invite code format!\n\nInvite code should be 22 characters (letters and numbers).' 
-            }, { quoted: message });
-            return;
+        if (inviteCode.length !== 22) {
+            return sock.sendMessage(chatId, { text: "❌ Invalid invite code length! WhatsApp codes should be 22 characters." }, { quoted: createFakeContact(message) });
         }
 
-        await sock.sendMessage(chatId, { 
-            text: '⏳ Attempting to join group...' 
-        }, { quoted: message });
+        // Fetch group info and accept invite with timeout
+        const groupInfo = await Promise.race([
+            sock.groupGetInviteInfo(inviteCode),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout fetching group info")), 10000))
+        ]);
 
+        await Promise.race([
+            sock.groupAcceptInvite(inviteCode),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout joining group")), 10000))
+        ]);
+
+        const groupName = groupInfo?.subject || "Unknown Group";
+        const groupInfoMessage = `✅ *Successfully Joined Group!*\n\n📌 *Name:* ${groupName}`;
+
+        // Try sending group profile picture
         try {
-            // Method 1: Try using groupAcceptInvite
-            const response = await sock.groupAcceptInvite(inviteCode);
-            
-            if (response) {
-                const groupId = response.gid;
-                await sock.sendMessage(chatId, { 
-                    text: `✅ Successfully joined the group!\n\n📝 Group ID: ${groupId}` 
-                }, { quoted: message });
-                return;
-            }
-        } catch (error) {
-            console.error('Error with groupAcceptInvite:', error);
-            
-            // Method 2: Try using query method as fallback
-            try {
-                const result = await sock.query({
-                    tag: 'iq',
-                    attrs: {
-                        type: 'set',
-                        xmlns: 'w:g2',
-                        to: '@g.us'
-                    },
-                    content: [
-                        {
-                            tag: 'invite',
-                            attrs: { code: inviteCode }
-                        }
-                    ]
-                });
-
-                if (result) {
-                    const groupNode = getBinaryNodeChild(result, 'group');
-                    if (groupNode) {
-                        const groupId = groupNode.attrs.id;
-                        await sock.sendMessage(chatId, { 
-                            text: `✅ Successfully joined the group!\n\n📝 Group ID: ${groupId}` 
-                        }, { quoted: message });
-                        return;
-                    }
-                }
-            } catch (queryError) {
-                console.error('Error with query method:', queryError);
-            }
-
-            // Handle specific error cases
-            if (error.message && error.message.includes('invite_revoked') || 
-                error.message && error.message.includes('expired')) {
-                await sock.sendMessage(chatId, { 
-                    text: '❌ The invite link has expired or been revoked!' 
-                }, { quoted: message });
-            } else if (error.message && error.message.includes('already')) {
-                await sock.sendMessage(chatId, { 
-                    text: '⚠️ I\'m already a member of this group!' 
-                }, { quoted: message });
-            } else if (error.message && error.message.includes('full')) {
-                await sock.sendMessage(chatId, { 
-                    text: '❌ The group is full (max 1024 members)!' 
-                }, { quoted: message });
-            } else if (error.message && error.message.includes('blocked')) {
-                await sock.sendMessage(chatId, { 
-                    text: '❌ I\'m blocked from joining this group!' 
-                }, { quoted: message });
+            const ppUrl = await sock.profilePictureUrl(`${groupInfo.id}@g.us`, "image");
+            if (ppUrl) {
+                const ppResponse = await axios.get(ppUrl, { responseType: "arraybuffer", timeout: 10000 });
+                await sock.sendMessage(chatId, { image: Buffer.from(ppResponse.data), caption: groupInfoMessage }, { quoted: createFakeContact(message) });
             } else {
-                await sock.sendMessage(chatId, { 
-                    text: `❌ Failed to join group: ${error.message || 'Unknown error'}` 
-                }, { quoted: message });
+                await sock.sendMessage(chatId, { text: groupInfoMessage }, { quoted: createFakeContact(message) });
             }
+        } catch {
+            await sock.sendMessage(chatId, { text: `${groupInfoMessage}` }, { quoted: createFakeContact(message) });
         }
+
+        // Final success reaction
+        await sock.sendMessage(chatId, { react: { text: "✅", key: message.key } });
+        console.log(`[JUNE-X] Successfully joined group: ${groupName}`);
+
     } catch (error) {
-        console.error('Error in join command:', error);
-        await sock.sendMessage(chatId, { 
-            text: '❌ An unexpected error occurred while trying to join the group.' 
-        }, { quoted: message });
+        console.error("[JUNE-X] Join command error:", error);
+
+        let errorMessage = "❌ Failed to join group!";
+        if (error.message.includes("Timeout")) errorMessage = "⏰ Request timeout. Please try again.";
+        else if (/invite|expired/i.test(error.message)) errorMessage = "❌ The invite link is invalid or has expired!";
+        else if (/already/i.test(error.message)) errorMessage = "⚠️ Bot is already in that group!";
+        else if (/admin|not-authorized/i.test(error.message)) errorMessage = "❌ Bot is not authorized to join this group.";
+        else if (/401|unauthorized/i.test(error.message)) errorMessage = "❌ Unauthorized access to group information.";
+        else if (/500/i.test(error.message)) errorMessage = "❌ Server error. Please try again later.";
+
+        return sock.sendMessage(chatId, { text: errorMessage }, { quoted: createFakeContact(message) });
     }
 }
 

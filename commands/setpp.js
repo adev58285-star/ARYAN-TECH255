@@ -1,24 +1,27 @@
 const fs = require('fs');
 const path = require('path');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
+const { isSudo } = require('../lib/index');
 
-async function setProfilePicture(sock, chatId, msg) {
+const { createFakeContact } = require('../lib/fakeContact');
+
+async function setProfilePicture(sock, chatId, message) {
     try {
-        // Check if user is owner
-        const isOwner = msg.key.fromMe;
+        const senderId = message.key.participant || message.key.remoteJid;
+        const isOwner = message.key.fromMe || await isSudo(senderId);
         if (!isOwner) {
             await sock.sendMessage(chatId, { 
                 text: '❌ This command is only available for the owner!' 
-            });
+            }, { quoted: createFakeContact(message) });
             return;
         }
 
         // Check if message is a reply
-        const quotedMessage = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+        const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
         if (!quotedMessage) {
             await sock.sendMessage(chatId, { 
                 text: '⚠️ Please reply to an image with the .setpp command!' 
-            });
+            }, { quoted: createFakeContact(message) });
             return;
         }
 
@@ -27,7 +30,7 @@ async function setProfilePicture(sock, chatId, msg) {
         if (!imageMessage) {
             await sock.sendMessage(chatId, { 
                 text: '❌ The replied message must contain an image!' 
-            });
+            }, { quoted: createFakeContact(message) });
             return;
         }
 
@@ -58,14 +61,14 @@ async function setProfilePicture(sock, chatId, msg) {
 
         await sock.sendMessage(chatId, { 
             text: '✅ Successfully updated bot profile picture!' 
-        });
+        }, { quoted: createFakeContact(message) });
 
     } catch (error) {
         console.error('Error in setpp command:', error);
         await sock.sendMessage(chatId, { 
             text: '❌ Failed to update profile picture!' 
-        });
+        }, { quoted: createFakeContact(message) });
     }
 }
 
-module.exports = setProfilePicture; 
+module.exports = setProfilePicture;

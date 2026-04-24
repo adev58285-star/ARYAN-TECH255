@@ -2,237 +2,192 @@ const fs = require('fs');
 const path = require('path');
 
 const dataFilePath = path.join(__dirname, '..', 'data', 'messageCount.json');
-const onlineStatusFilePath = path.join(__dirname, '..', 'data', 'onlineStatus.json');
-const OFFLINE_THRESHOLD_MINUTES = 5; // User considered offline after 5 minutes
 
-function loadJson(filePath) {
-    if (fs.existsSync(filePath)) {
-        const data = fs.readFileSync(filePath);
-        return JSON.parse(data);
+// Ensure data directory exists
+const { createFakeContact } = require('../lib/fakeContact');
+function ensureDataDirectory() {
+    const dataDir = path.dirname(dataFilePath);
+    if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
     }
-    return {};
-}
-
-function saveJson(filePath, data) {
-    try { fs.mkdirSync(path.dirname(filePath), { recursive: true }); } catch {}
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
 function loadMessageCounts() {
-    return loadJson(dataFilePath);
+    try {
+        ensureDataDirectory();
+        if (fs.existsSync(dataFilePath)) {
+            const data = fs.readFileSync(dataFilePath, 'utf8');
+            // Handle empty file case
+            if (!data.trim()) {
+                return {};
+            }
+            return JSON.parse(data);
+        }
+        return {};
+    } catch (error) {
+        console.error('Error loading message counts:', error);
+        return {};
+    }
 }
 
 function saveMessageCounts(messageCounts) {
-    saveJson(dataFilePath, messageCounts);
-}
-
-function loadOnlineStatus() {
-    return loadJson(onlineStatusFilePath);
-}
-
-function saveOnlineStatus(onlineStatus) {
-    saveJson(onlineStatusFilePath, onlineStatus);
+    try {
+        ensureDataDirectory();
+        fs.writeFileSync(dataFilePath, JSON.stringify(messageCounts, null, 2));
+    } catch (error) {
+        console.error('Error saving message counts:', error);
+    }
 }
 
 function incrementMessageCount(groupId, userId) {
-    const messageCounts = loadMessageCounts();
+    try {
+        const messageCounts = loadMessageCounts();
 
-    if (!messageCounts[groupId]) {
-        messageCounts[groupId] = {};
-    }
-
-    if (!messageCounts[groupId][userId]) {
-        messageCounts[groupId][userId] = 0;
-    }
-
-    messageCounts[groupId][userId] += 1;
-    saveMessageCounts(messageCounts);
-}
-
-function updateUserActivity(groupId, userId) {
-    const onlineStatus = loadOnlineStatus();
-    
-    if (!onlineStatus[groupId]) {
-        onlineStatus[groupId] = {};
-    }
-    
-    onlineStatus[groupId][userId] = {
-        lastSeen: Date.now(),
-        isOnline: true
-    };
-    
-    saveOnlineStatus(onlineStatus);
-}
-
-function getOnlineMembers(groupId) {
-    const onlineStatus = loadOnlineStatus();
-    const groupStatus = onlineStatus[groupId] || {};
-    const now = Date.now();
-    
-    const result = {
-        onlineMembers: [],
-        offlineMembers: []
-    };
-    
-    for (const [userId, status] of Object.entries(groupStatus)) {
-        const minutesAgo = Math.floor((now - status.lastSeen) / 60000);
-        const isOnline = minutesAgo <= OFFLINE_THRESHOLD_MINUTES;
-        
-        const memberInfo = {
-            userId: userId,
-            lastSeen: status.lastSeen,
-            minutesAgo: minutesAgo,
-            isCurrentlyOnline: isOnline
-        };
-        
-        if (isOnline) {
-            result.onlineMembers.push(memberInfo);
-        } else {
-            result.offlineMembers.push(memberInfo);
+        if (!messageCounts[groupId]) {
+            messageCounts[groupId] = {};
         }
+
+        if (!messageCounts[groupId][userId]) {
+            messageCounts[groupId][userId] = 0;
+        }
+
+        messageCounts[groupId][userId] += 1;
+
+        saveMessageCounts(messageCounts);
+    } catch (error) {
+        console.error('Error incrementing message count:', error);
     }
-    
-    // Sort online members by most recent activity
-    result.onlineMembers.sort((a, b) => a.minutesAgo - b.minutesAgo);
-    
-    // Sort offline members by most recent first
-    result.offlineMembers.sort((a, b) => a.minutesAgo - b.minutesAgo);
-    
-    return result;
 }
 
-function formatTimeAgo(minutes) {
-    if (minutes === 0) return 'just now';
-    
-    if (minutes < 60) {
-        return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-    }
-    
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) {
-        return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    }
-    
-    const days = Math.floor(hours / 24);
-    return `${days} day${days > 1 ? 's' : ''} ago`;
-}
+function topMembers(sock, chatId, isGroup, count = 5) {
+    try {
+        if (!isGroup) {
+            sock.sendMessage(chatId, { text: 'This command is only available in group chats.' }, { quoted: createFakeContact(message) });
+            return;
+        }
 
-function listOnlineCommand(sock, chatId, isGroup) {
-    if (!isGroup) {
-        sock.sendMessage(chatId, { text: 'This command is only available in group chats.' });
-        return;
-    }
+        const messageCounts = loadMessageCounts();
+        const groupCounts = messageCounts[chatId] || {};
 
-    const { onlineMembers } = getOnlineMembers(chatId);
-    
-    if (onlineMembers.length === 0) {
-        sock.sendMessage(chatId, { text: 'No members are currently online.' });
-        return;
-    }
+        const sortedMembers = Object.entries(groupCounts)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, count);
 
-    let message = '🟢 Online Members 🟢\n\n';
-    onlineMembers.forEach((member, index) => {
-        message += `${index + 1}. @${member.userId.split('@')[0]} - Last active: ${formatTimeAgo(member.minutesAgo)}\n`;
-    });
-    
-    message += `\nTotal online: ${onlineMembers.length}`;
+        if (sortedMembers.length === 0) {
+            sock.sendMessage(chatId, { text: 'No message activity recorded yet.' }, { quoted: createFakeContact(message) });
+            return;
+        }
 
-    sock.sendMessage(chatId, { 
-        text: message, 
-        mentions: onlineMembers.map(member => member.userId) 
-    });
-}
-
-function listOfflineCommand(sock, chatId, isGroup) {
-    if (!isGroup) {
-        sock.sendMessage(chatId, { text: 'This command is only available in group chats.' });
-        return;
-    }
-
-    const { offlineMembers } = getOnlineMembers(chatId);
-    
-    if (offlineMembers.length === 0) {
-        sock.sendMessage(chatId, { text: 'No members are currently offline.' });
-        return;
-    }
-
-    let message = '🔴 Offline Members 🔴\n\n';
-    offlineMembers.forEach((member, index) => {
-        message += `${index + 1}. @${member.userId.split('@')[0]} - Last seen: ${formatTimeAgo(member.minutesAgo)}\n`;
-    });
-    
-    message += `\nTotal offline: ${offlineMembers.length}`;
-
-    sock.sendMessage(chatId, { 
-        text: message, 
-        mentions: offlineMembers.map(member => member.userId) 
-    });
-}
-
-function topMembers(sock, chatId, isGroup) {
-    if (!isGroup) {
-        sock.sendMessage(chatId, { text: 'This command is only available in group chats.' });
-        return;
-    }
-
-    const messageCounts = loadMessageCounts();
-    const groupCounts = messageCounts[chatId] || {};
-
-    const sortedMembers = Object.entries(groupCounts)
-        .sort(([, a], [, b]) => b - a)
-        .slice(0, 5);
-
-    if (sortedMembers.length === 0) {
-        sock.sendMessage(chatId, { text: 'No message activity recorded yet.' });
-        return;
-    }
-
-    let message = '🏆 Top Members Based on Message Count:\n\n';
-    sortedMembers.forEach(([userId, count], index) => {
-        message += `${index + 1}. 🔹@${userId.split('@')[0]} - ${count} messages\n`;
-    });
-
-    sock.sendMessage(chatId, { text: message, mentions: sortedMembers.map(([userId]) => userId) });
-}
-
-// Function to update both message count and online status
-function handleUserActivity(groupId, userId) {
-    incrementMessageCount(groupId, userId);
-    updateUserActivity(groupId, userId);
-}
-
-// Optional: Cleanup function to periodically update offline status
-function cleanupOfflineUsers() {
-    const onlineStatus = loadOnlineStatus();
-    const now = Date.now();
-    let changed = false;
-    
-    for (const groupId in onlineStatus) {
-        for (const userId in onlineStatus[groupId]) {
-            const status = onlineStatus[groupId][userId];
-            const minutesAgo = Math.floor((now - status.lastSeen) / 60000);
+        let message = `🏆 Top ${sortedMembers.length} Members Based on Message Count:\n\n`;
+        const mentions = [];
+        
+        sortedMembers.forEach(([userId, messageCount], index) => {
+            const rankIcons = ['🥇', '🥈', '🥉', '🔹', '🔸'];
+            const rankIcon = rankIcons[index] || '🔹';
+            const username = userId.split('@')[0];
             
-            if (minutesAgo > OFFLINE_THRESHOLD_MINUTES && status.isOnline) {
-                onlineStatus[groupId][userId].isOnline = false;
-                changed = true;
-            }
-        }
-    }
-    
-    if (changed) {
-        saveOnlineStatus(onlineStatus);
+            message += `${index + 1}. ${rankIcon} @${username} - ${messageCount} message${messageCount !== 1 ? 's' : ''}\n`;
+            mentions.push(userId);
+        });
+
+        const totalMessages = Object.values(groupCounts).reduce((sum, count) => sum + count, 0);
+        message += `\n📊 Total group messages: ${totalMessages}`;
+
+        sock.sendMessage(chatId, { 
+            text: message, 
+            mentions: mentions 
+        }, { quoted: createFakeContact(message) });
+    } catch (error) {
+        console.error('Error in topMembers command:', error);
+        sock.sendMessage(chatId, { text: 'An error occurred while fetching top members.' }, { quoted: createFakeContact(message) });
     }
 }
 
-// Run cleanup every minute (optional)
-setInterval(cleanupOfflineUsers, 60000);
+// New function to get user's message count
+function getUserRank(sock, chatId, isGroup, userId) {
+    try {
+        if (!isGroup) {
+            sock.sendMessage(chatId, { text: 'This command is only available in group chats.' }, { quoted: createFakeContact(message) });
+            return;
+        }
+
+        const messageCounts = loadMessageCounts();
+        const groupCounts = messageCounts[chatId] || {};
+
+        if (!groupCounts[userId]) {
+            sock.sendMessage(chatId, { text: 'No messages recorded for this user yet.' }, { quoted: createFakeContact(message) });
+            return;
+        }
+
+        const sortedMembers = Object.entries(groupCounts)
+            .sort(([, a], [, b]) => b - a);
+
+        const userRank = sortedMembers.findIndex(([id]) => id === userId) + 1;
+        const userMessageCount = groupCounts[userId];
+        const totalMembers = sortedMembers.length;
+
+        const message = `📊 Your Message Stats:\n\n` +
+                       `🏅 Rank: ${userRank}/${totalMembers}\n` +
+                       `💬 Messages: ${userMessageCount}\n` +
+                       `📈 Top ${Math.round((userRank / totalMembers) * 100)}% of active members`;
+
+        sock.sendMessage(chatId, { text: message, mentions: [userId] }, { quoted: createFakeContact(message) });
+    } catch (error) {
+        console.error('Error in getUserRank command:', error);
+        sock.sendMessage(chatId, { text: 'An error occurred while fetching user rank.' }, { quoted: createFakeContact(message) });
+    }
+}
+
+// New function to reset message counts (admin only)
+function resetMessageCounts(groupId) {
+    try {
+        const messageCounts = loadMessageCounts();
+        if (messageCounts[groupId]) {
+            delete messageCounts[groupId];
+            saveMessageCounts(messageCounts);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error resetting message counts:', error);
+        return false;
+    }
+}
+
+// New function to get group statistics
+function getGroupStats(sock, chatId, isGroup) {
+    try {
+        if (!isGroup) {
+            sock.sendMessage(chatId, { text: 'This command is only available in group chats.' }, { quoted: createFakeContact(message) });
+            return;
+        }
+
+        const messageCounts = loadMessageCounts();
+        const groupCounts = messageCounts[chatId] || {};
+
+        const totalMessages = Object.values(groupCounts).reduce((sum, count) => sum + count, 0);
+        const activeMembers = Object.keys(groupCounts).length;
+        
+        const sortedCounts = Object.values(groupCounts).sort((a, b) => b - a);
+        const averageMessages = activeMembers > 0 ? Math.round(totalMessages / activeMembers) : 0;
+        
+        let message = `📊 Group Message Statistics:\n\n` +
+                     `👥 Active Members: ${activeMembers}\n` +
+                     `💬 Total Messages: ${totalMessages}\n` +
+                     `📈 Average per Member: ${averageMessages}\n` +
+                     `🔥 Most Active: ${sortedCounts[0] || 0} messages`;
+
+        sock.sendMessage(chatId, { text: message }, { quoted: createFakeContact(message) });
+    } catch (error) {
+        console.error('Error in getGroupStats command:', error);
+        sock.sendMessage(chatId, { text: 'An error occurred while fetching group statistics.' }, { quoted: createFakeContact(message) });
+    }
+}
 
 module.exports = { 
     incrementMessageCount, 
     topMembers, 
-    listOnlineCommand, 
-    listOfflineCommand,
-    handleUserActivity,
-    updateUserActivity,
-    getOnlineMembers
+    getUserRank, 
+    resetMessageCounts,
+    getGroupStats 
 };

@@ -1,11 +1,10 @@
 const fs = require('fs');
 const path = require('path');
+const { isSudo } = require('../lib/index');
 
 // Path to store owner settings
 const OWNER_FILE = path.join(__dirname, '..', 'data', 'owner.json');
-
-// Default owner name
-const DEFAULT_OWNER_NAME = 'Not Set!';
+const DEFAULT_OWNER_NAME = 'Not set !';
 
 // Ensure data directory exists
 const dataDir = path.join(__dirname, '..', 'data');
@@ -18,9 +17,10 @@ if (!fs.existsSync(OWNER_FILE)) {
     fs.writeFileSync(OWNER_FILE, JSON.stringify({ ownerName: DEFAULT_OWNER_NAME }, null, 2));
 }
 
+const { createFakeContact } = require('../lib/fakeContact');
+
 /**
  * Get the current owner name
- * @returns {string} The current owner name
  */
 function getOwnerName() {
     try {
@@ -33,19 +33,13 @@ function getOwnerName() {
 }
 
 /**
- * Set new owner name
- * @param {string} newOwnerName - The new owner name to set
- * @returns {boolean} Success status
+ * Set new owner name – saves exactly as provided (including spaces)
  */
 function setOwnerName(newOwnerName) {
     try {
-        // Validate owner name
-        if (!newOwnerName || newOwnerName.length > 20) {
-            return false;
-        }
+        if (!newOwnerName || newOwnerName.length > 20) return false; // raw length check
         
-        const data = { ownerName: newOwnerName };
-        fs.writeFileSync(OWNER_FILE, JSON.stringify(data, null, 2));
+        fs.writeFileSync(OWNER_FILE, JSON.stringify({ ownerName: newOwnerName }, null, 2));
         return true;
     } catch (error) {
         console.error('Error setting owner name:', error);
@@ -55,12 +49,10 @@ function setOwnerName(newOwnerName) {
 
 /**
  * Reset owner name to default
- * @returns {boolean} Success status
  */
 function resetOwnerName() {
     try {
-        const data = { ownerName: DEFAULT_OWNER_NAME };
-        fs.writeFileSync(OWNER_FILE, JSON.stringify(data, null, 2));
+        fs.writeFileSync(OWNER_FILE, JSON.stringify({ ownerName: DEFAULT_OWNER_NAME }, null, 2));
         return true;
     } catch (error) {
         console.error('Error resetting owner name:', error);
@@ -68,146 +60,105 @@ function resetOwnerName() {
     }
 }
 
+/**
+ * Validate owner name – now checks raw length and allows any characters
+ */
+function validateOwnerName(name) {
+    if (!name) return { isValid: false, message: 'Owner name cannot be empty!' };
+    
+    // Reject if only whitespace
+    if (!name.trim()) return { isValid: false, message: 'Owner name cannot be only spaces!' };
+    
+    // Raw length must be 1-20 characters (including spaces)
+    if (name.length > 20) return { isValid: false, message: 'Owner name must be 1-20 characters long!' };
+    
+    // No invalid character restrictions – name is saved exactly as typed
+    return { isValid: true, message: 'Valid owner name' };
+}
+
+// Common message context
+const messageContext = {
+    forwardingScore: 1,
+    isForwarded: false,
+    forwardedNewsletterMessageInfo: {
+        newsletterJid: '',
+        newsletterName: '',
+        serverMessageId: -1
+    }
+};
+
 async function handleSetOwnerCommand(sock, chatId, senderId, message, userMessage, currentPrefix) {
     const args = userMessage.split(' ').slice(1);
-   const newOwnerName = args.join(' ');
+    const input = args.join(' ');
+    const fake = createFakeContact(message);
     
-    // Create fake contact for enhanced replies
-function createFakeContact(message) {
-    return {
-        key: {
-            participants: "0@s.whatsapp.net",
-            remoteJid: "status@broadcast",
-            fromMe: false,
-            id: "∆RY∆N-TECH"
-        },
-        message: {
-            contactMessage: {
-                vcard: `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:∆RY∆N-TECH\nitem1.TEL;waid=${message.key.participant?.split('@')[0] || message.key.remoteJid.split('@')[0]}:${message.key.participant?.split('@')[0] || message.key.remoteJid.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`
-            }
-        },
-        participant: "0@s.whatsapp.net"
-    };
-}
-    
-  const fake = createFakeContact(message);
-    // Only bot owner can change owner name
-    if (!message.key.fromMe) {
+    if (!message.key.fromMe && !(await isSudo(senderId))) {
         await sock.sendMessage(chatId, { 
-            text: '❌ Only bot owner can change the owner name!',
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: false,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '',
-                    newsletterName: '',
-                    serverMessageId: -1
-                }
-            }
-        }, { quoted: fake });
+            text: '❌ Only bot owner can change the owner name!'
+        }, { quoted: createFakeContact(message) });
         return;
     }
 
-    if (!newOwnerName) {
-        // Show current owner name
+    if (!input) {
         const current = getOwnerName();
         await sock.sendMessage(chatId, { 
-            text: `👑 Current Owner Name: *${current}*\n\nUsage: ${currentPrefix}setowner <new_name>\nExample: ${currentPrefix}setowner Superstar\n\nTo reset: ${currentPrefix}setowner reset`,
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: false,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '',
-                    newsletterName: '',
-                    serverMessageId: -1
-                }
-            }
-        }, { quoted: fake });
+            text: `👑 Current Owner Name: *${current}*\n\nUsage: ${currentPrefix}setowner <new_name>\nExample: ${currentPrefix}setowner Supreme\nExample: ${currentPrefix}setowner john doe\n\nTo reset: ${currentPrefix}setowner reset`
+        }, { quoted: createFakeContact(message) });
         return;
     }
 
-    if (newOwnerName.toLowerCase() === 'reset') {
-        // Reset to default owner name
+    if (input.toLowerCase() === 'reset') {
         const success = resetOwnerName();
-        if (success) {
-            const defaultOwnerName = getOwnerName();
-            await sock.sendMessage(chatId, { 
-                text: `✅ Owner name reset to default: *${defaultOwnerName}*`,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: false,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '@',
-                        newsletterName: '',
-                        serverMessageId: -1
-                    }
-                }
-            }, { quoted: fake });
-        } else {
-            await sock.sendMessage(chatId, { 
-                text: '❌ Failed to reset owner name!',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: false,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '@',
-                        newsletterName: '',
-                        serverMessageId: -1
-                    }
-                }
-            },{ quoted: fake});
-        }
+        const response = success ? 
+            `✅ Owner name reset to default: *${DEFAULT_OWNER_NAME}*` : 
+            '❌ Failed to reset owner name!';
+        await sock.sendMessage(chatId, { text: response }, { quoted: createFakeContact(message) });
         return;
     }
 
-    // Set new owner name
-    if (newOwnerName.length > 20) {
-        await sock.sendMessage(chatId, { 
-            text: '❌ Owner name must be 1-20 characters long!',
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '',
-                    newsletterName: '',
-                    serverMessageId: -1
-                }
-            }
-        }, { quoted: fake });
+    const validation = validateOwnerName(input);
+    if (!validation.isValid) {
+        await sock.sendMessage(chatId, { text: `❌ ${validation.message}` }, { quoted: createFakeContact(message) });
         return;
     }
 
-    const success = setOwnerName(newOwnerName);
-    if (success) {
-        await sock.sendMessage(chatId, { 
-            text: `✅ Owner name successfully set to: *${newOwnerName}*`,
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: false,               forwardedNewsletterMessageInfo: {
-                    newsletterJid: '@',
-                    newsletterName: '',
-                    serverMessageId: -1
-                }
-            }
-        }, { quoted: fake });
-    } else {
-        await sock.sendMessage(chatId, { 
-            text: '❌ Failed to set owner name!',
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: false,             forwardedNewsletterMessageInfo: {
-                    newsletterJid: '@',
-                    newsletterName: '',
-                    serverMessageId: -1
-                }
-            }
-        }, { quoted: fake });
-    }
+    const success = setOwnerName(input); // saves raw input, no trimming
+    const response = success ? 
+        `✅ Owner name successfully set to: *${input}*` :  // shows raw input
+        '❌ Failed to set owner name!';
+    
+    await sock.sendMessage(chatId, { text: response }, { quoted: createFakeContact(message) });
+}
+
+/**
+ * Get owner info
+ */
+function getOwnerInfo() {
+    const ownerName = getOwnerName();
+    return {
+        name: ownerName,
+        formattedName: ownerName,
+        isDefault: ownerName === DEFAULT_OWNER_NAME
+    };
+}
+
+/**
+ * Check if a given name matches the current owner name
+ */
+function isOwnerNameMatch(nameToCheck, caseSensitive = true) {
+    const currentOwner = getOwnerName();
+    return caseSensitive ? 
+        currentOwner === nameToCheck : 
+        currentOwner.toLowerCase() === nameToCheck.toLowerCase();
 }
 
 module.exports = {
     getOwnerName,
     setOwnerName,
     resetOwnerName,
-    handleSetOwnerCommand
+    handleSetOwnerCommand,
+    validateOwnerName,
+    getOwnerInfo,
+    isOwnerNameMatch,
+    DEFAULT_OWNER_NAME
 };

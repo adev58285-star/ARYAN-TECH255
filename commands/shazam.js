@@ -6,6 +6,7 @@ const { UploadFileUgu } = require('../lib/uploader');
 
 const DEBUG = true;
 
+const { createFakeContact } = require('../lib/fakeContact');
 function debugLog(message, data = null) {
     if (DEBUG) {
         console.log(`[SHAZAM] ${message}`, data ? JSON.stringify(data, null, 2) : '');
@@ -124,8 +125,8 @@ async function shazamCommand(sock, chatId, message) {
         if (!media) {
             debugLog('No media found - sending instructions');
             await sock.sendMessage(chatId, {
-                text: 'Send or reply to an audio/voice note, video, or image to identify the song.\n\nSupported media:\n• Audio/Voice notes\n• Videos with audio.'
-            }, { quoted: message });
+                text: 'Send or reply to\naudio/voice note\nvideo identify the song.\n\nSupported media:\n• Audio/Voice notes\n• Videos with audio.'
+            }, { quoted: createFakeContact(message) });
             return;
         }
 
@@ -170,7 +171,7 @@ async function shazamCommand(sock, chatId, message) {
 
         if (!mediaUrl) {
             debugLog('No media URL obtained from upload');
-            await sock.sendMessage(chatId, { text: 'Failed to upload media - no URL returned.' }, { quoted: message });
+            await sock.sendMessage(chatId, { text: 'Failed to upload media - no URL returned.' }, { quoted: createFakeContact(message) });
             return;
         }
 
@@ -179,7 +180,7 @@ async function shazamCommand(sock, chatId, message) {
         let resultText = '';
         try {
             debugLog('Calling Shazam API...', { url: mediaUrl });
-            const response = await axios.get(`https://apiskeith.vercel.app/ai/shazam`, {
+            const response = await axios.get(`https://apiskeith.top/ai/shazam`, {
                 params: { url: mediaUrl },
                 timeout: 30000
             });
@@ -218,7 +219,7 @@ async function shazamCommand(sock, chatId, message) {
         }
 
         debugLog('Sending result to user...');
-        await sock.sendMessage(chatId, { text: resultText }, { quoted: message });
+        await sock.sendMessage(chatId, { text: resultText }, { quoted: createFakeContact(message) });
 
     } catch (error) {
         console.error('[SHAZAM] General error:', error.message);
@@ -226,7 +227,7 @@ async function shazamCommand(sock, chatId, message) {
 
         await sock.sendMessage(chatId, {
             text: `❌ Failed to process media for recognition: ${error.message}`
-        }, { quoted: message });
+        }, { quoted: createFakeContact(message) });
     } finally {
         if (tempPath && fs.existsSync(tempPath)) {
             try {

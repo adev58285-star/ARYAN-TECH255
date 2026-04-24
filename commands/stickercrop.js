@@ -6,6 +6,7 @@ const settings = require('../settings');
 const webp = require('node-webpmux');
 const crypto = require('crypto');
 
+const { createFakeContact } = require('../lib/fakeContact');
 async function stickercropCommand(sock, chatId, message) {
     // The message that will be quoted in the reply.
     const messageToQuote = message;
@@ -110,7 +111,7 @@ async function stickercropCommand(sock, chatId, message) {
         // Create metadata
         const json = {
             'sticker-pack-id': crypto.randomBytes(32).toString('hex'),
-            'sticker-pack-name': settings.packname || 'KnightBot',
+            'sticker-pack-name': settings.packname || 'June-x',
             'emojis': ['✂️']
         };
 

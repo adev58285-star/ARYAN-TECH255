@@ -4,17 +4,19 @@ const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 const webp = require('node-webpmux');
 const crypto = require('crypto');
 
+const { createFakeContact } = require('../lib/fakeContact');
 async function takeCommand(sock, chatId, message, args) {
     try {
+         const pushname = message.pushName || "Unknown User"; 
         // Check if message is a reply to a sticker
         const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
         if (!quotedMessage?.stickerMessage) {
-            await sock.sendMessage(chatId, { text: '❌ Reply to a sticker with .take <packname>' });
+            await sock.sendMessage(chatId, { text: '❌ Reply to a sticker with .take <packname>' }, { quoted: createFakeContact(message) });
             return;
         }
 
         // Get the packname from args or use default
-        const packname = args.join(' ') || 'ᴘʀᴇᴛᴛʏ ᴍᴅ';
+        const packname = args.join(' ') || `${pushname}`;
 
         try {
             // Download the sticker
@@ -33,7 +35,7 @@ async function takeCommand(sock, chatId, message, args) {
             );
 
             if (!stickerBuffer) {
-                await sock.sendMessage(chatId, { text: '❌ Failed to download sticker' });
+                await sock.sendMessage(chatId, { text: '❌ Failed to download sticker' }, { quoted: createFakeContact(message) });
                 return;
             }
 
@@ -63,18 +65,16 @@ async function takeCommand(sock, chatId, message, args) {
             // Send the sticker
             await sock.sendMessage(chatId, {
                 sticker: finalBuffer
-            }, {
-                quoted: message
-            });
+            }, { quoted: createFakeContact(message) });
 
         } catch (error) {
             console.error('Sticker processing error:', error);
-            await sock.sendMessage(chatId, { text: '❌ Error processing sticker' });
+            await sock.sendMessage(chatId, { text: '❌ Error processing sticker' }, { quoted: createFakeContact(message) });
         }
 
     } catch (error) {
         console.error('Error in take command:', error);
-        await sock.sendMessage(chatId, { text: '❌ Error processing command' });
+        await sock.sendMessage(chatId, { text: '❌ Error processing command' }, { quoted: createFakeContact(message) });
     }
 }
 

@@ -1,65 +1,59 @@
-const fs = require('fs');
-const path = require('path');
+const { createFakeContact } = require('../lib/fakeContact');
+const { getOwnerNumber, setOwnerNumber } = require('../lib/botConfig');
 
-const OWNER_NUMBER_FILE = path.join(__dirname, '..', 'data', 'ownernumber.json');
-
-const dataDir = path.join(__dirname, '..', 'data');
-if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-}
-
-if (!fs.existsSync(OWNER_NUMBER_FILE)) {
-    fs.writeFileSync(OWNER_NUMBER_FILE, JSON.stringify({ ownerNumber: '' }, null, 2));
-}
-
-function getOwnerNumber() {
+async function setOwnerNumberCommand(sock, chatId, message, args) {
     try {
-        const data = JSON.parse(fs.readFileSync(OWNER_NUMBER_FILE, 'utf8'));
-        return data.ownerNumber || '';
-    } catch (error) {
-        console.error('Error reading owner number file:', error);
-        return '';
-    }
-}
+        const isFromMe = message.key.fromMe;
 
-function setOwnerNumber(number) {
-    try {
-        if (!number) return false;
-        fs.writeFileSync(OWNER_NUMBER_FILE, JSON.stringify({ ownerNumber: number }, null, 2));
-        return true;
-    } catch (error) {
-        console.error('Error setting owner number:', error);
-        return false;
-    }
-}
+        if (!isFromMe) {
+            await sock.sendMessage(chatId, {
+                text: '❌ Only the bot itself can change the owner number.'
+            }, { quoted: createFakeContact(message) });
+            return;
+        }
 
-async function handleSetOwnerNumberCommand(sock, chatId, senderId, message, userMessage, prefix) {
-    if (!message.key.fromMe) {
-        await sock.sendMessage(chatId, { text: '❌ Only bot owner can change the owner number!' });
-        return;
-    }
+        const input = args.trim();
 
-    const args = userMessage.split(' ').slice(1);
-    const newNumber = args.join('').replace(/[^0-9]/g, '');
+        if (!input) {
+            const current = getOwnerNumber();
+            const text = `
+📱 *OWNER NUMBER SETTINGS*
 
-    if (!newNumber) {
-        const current = getOwnerNumber();
+*Current Owner Number:* +${current || 'Not set'}
+
+*Usage:* \`.setownernumber <number>\`
+
+*Examples:*
+├─ \`.setownernumber 254792021944\`
+└─ \`.setownernumber 12025550199\`
+
+_Enter the number with country code, no + or spaces._
+`.trim();
+            await sock.sendMessage(chatId, { text }, { quoted: createFakeContact(message) });
+            return;
+        }
+
+        // Strip leading + or spaces just in case
+        const cleaned = input.replace(/^\+/, '').replace(/\s+/g, '');
+
+        // Validate: digits only, reasonable length (7–15 digits)
+        if (!/^\d{7,15}$/.test(cleaned)) {
+            await sock.sendMessage(chatId, {
+                text: `❌ *Invalid number:* \`${input}\`\n\nPlease enter digits only with country code, no + or spaces.\nExample: \`254792021944\``
+            }, { quoted: createFakeContact(message) });
+            return;
+        }
+
+        setOwnerNumber(cleaned);
+
         await sock.sendMessage(chatId, {
-            text: `📱 Current Owner Number: *${current || 'Not set'}*\n\nUsage: ${prefix}setownernumber <number>\nExample: ${prefix}setownernumber 1234567890`
-        });
-        return;
-    }
+            text: `✅ *Owner number updated successfully!*\n\n📱 *New Owner Number:* +${cleaned}\n\n_This takes effect immediately — no restart needed._`
+        }, { quoted: createFakeContact(message) });
 
-    const success = setOwnerNumber(newNumber);
-    await sock.sendMessage(chatId, {
-        text: success
-            ? `✅ Owner number set to: *${newNumber}*`
-            : '❌ Failed to set owner number!'
-    });
+    } catch (error) {
+        console.error('Error in setownernumber command:', error);
+        await sock.sendMessage(chatId, { text: '❌ Failed to update owner number.' }, { quoted: createFakeContact(message) });
+    }
 }
 
-module.exports = {
-    getOwnerNumber,
-    setOwnerNumber,
-    handleSetOwnerNumberCommand
-};
+module.exports = setOwnerNumberCommand;

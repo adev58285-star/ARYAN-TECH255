@@ -1,9 +1,10 @@
 const fetch = require('node-fetch');
 
+const { createFakeContact } = require('../lib/fakeContact');
 async function handleSsCommand(sock, chatId, message, match) {
     if (!match) {
         await sock.sendMessage(chatId, {
-            text: `*SCREENSHOT TOOL*\n\n*.ss <url>*\n*.ssweb <url>*\n*.screenshot <url>*\n\nTake a screenshot of any website\n\nExample:\n.ss https://google.com\n.ssweb https://google.com\n.screenshot https://google.com`,
+            text: `🌐 *SCREENSHOT WEB TOOL*\n\n*.ssweb <url>*\n\nCapture a screenshot of any website\n\nExample:\n.ssweb https://example.com`,
             quoted: message
         });
         return;
@@ -14,39 +15,44 @@ async function handleSsCommand(sock, chatId, message, match) {
         await sock.presenceSubscribe(chatId);
         await sock.sendPresenceUpdate('composing', chatId);
 
+        // Inform user that screenshot is being captured
+        await sock.sendMessage(chatId, {
+            text: '🖼️ Capturing screenshot, please wait...',
+            quoted: message
+        });
+
         // Extract URL from command
         const url = match.trim();
         
         // Validate URL
         if (!url.startsWith('http://') && !url.startsWith('https://')) {
             return sock.sendMessage(chatId, {
-                text: '❌ Please provide a valid URL starting with http:// or https://',
+                text: '🌐 Please provide a valid URL starting with http:// or https://\nExample: .ssweb https://example.com',
                 quoted: message
             });
         }
 
         // Call the API
-        const apiUrl = `https://api.siputzx.my.id/api/tools/ssweb?url=${encodeURIComponent(url)}&theme=light&device=desktop`;
-        const response = await fetch(apiUrl, { headers: { 'accept': '*/*' } });
+        const apiUrl = `https://api.zenzxz.my.id/api/tools/ssweb?url=${encodeURIComponent(url)}`;
+        const response = await fetch(apiUrl);
         
         if (!response.ok) {
-            throw new Error(`API responded with status: ${response.status}`);
+            throw new Error(`HTTP error ${response.status}`);
         }
 
         // Get the image buffer
         const imageBuffer = await response.buffer();
 
-        // Send the screenshot
+        // Send the screenshot with caption
         await sock.sendMessage(chatId, {
             image: imageBuffer,
-        }, {
-            quoted: message
-        });
+            caption: `🖥️ *Screenshot of:* ${url}`
+        }, { quoted: createFakeContact(message) });
 
     } catch (error) {
-        console.error('❌ Error in ss command:', error);
+        console.error('❌ Error in ssweb command:', error);
         await sock.sendMessage(chatId, {
-            text: '❌ Failed to take screenshot. Please try again in a few minutes.\n\nPossible reasons:\n• Invalid URL\n• Website is blocking screenshots\n• Website is down\n• API service is temporarily unavailable',
+            text: `❌ Failed to capture screenshot.\nError: ${error.message}`,
             quoted: message
         });
     }
@@ -54,4 +60,4 @@ async function handleSsCommand(sock, chatId, message, match) {
 
 module.exports = {
     handleSsCommand
-}; 
+};
