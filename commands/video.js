@@ -1,118 +1,71 @@
-const axios = require('axios');
 const yts = require('yt-search');
+const axios = require('axios');
+const { createFakeContact } = require('../lib/fakeContact');
 
 async function videoCommand(sock, chatId, message) {
     try {
-        // Initial reaction
-        await sock.sendMessage(chatId, {
-            react: { text: '🎥', key: message.key }
-        });
-
-        const text = message.message?.conversation 
-            || message.message?.extendedTextMessage?.text 
-            || message.message?.imageMessage?.caption 
-            || "";
-        const parts = text.split(' ');
-        const query = parts.slice(1).join(' ').trim();
-
-        if (!query) {
-            await sock.sendMessage(chatId, {
-                react: { text: '❓', key: message.key }
-            });
-            return sock.sendMessage(chatId, {
-                text: '🎬 Provide a YouTube link or Name\nExample:\n\nvideo Not Like Us Music Video\nvideo Espresso '
-            }, { quoted: message });
+        const text = message.message?.conversation || message.message?.extendedTextMessage?.text;
+        const searchQuery = text.split(' ').slice(1).join(' ').trim();
+        const fakekontak = createFakeContact(message);
+        
+        if (!searchQuery) {
+            return await sock.sendMessage(chatId, { 
+                text: "What video do you want to download?"
+            }, { quoted: fakekontak });
         }
 
-        if (query.length > 100) {
-            await sock.sendMessage(chatId, {
-                react: { text: '📝', key: message.key }
-            });
-            return sock.sendMessage(chatId, {
-                text: `📝 Video name too long! Max 100 chars.`
-            }, { quoted: message });
+        // Search for the video
+        const { videos } = await yts(searchQuery);
+        if (!videos || videos.length === 0) {
+            return await sock.sendMessage(chatId, { 
+                text: "No videos found!"
+            }, { quoted: fakekontak });
         }
 
-        // Searching reaction
-        await sock.sendMessage(chatId, {
-            react: { text: '🔎', key: message.key }
-        });
+        // Get the first video result
+        const video = videos[0];
+        const urlYt = video.url;
+        const title = video.title; // ✅ Title from yt-search
 
-        // Search for video
-        const searchResult = (await yts(query)).videos[0];
-        if (!searchResult) {
-            await sock.sendMessage(chatId, {
-                react: { text: '🚫', key: message.key }
-            });
-            return sock.sendMessage(chatId, {
-                text: " 🚫 Couldn't find that video. Try another one!"
-            }, { quoted: message });
+        // Notify user about download
+        await sock.sendMessage(chatId, { 
+            text: `_Playing 🎥_\n_${title} 🎬_`
+        }, { quoted: fakekontak });
+
+        // Fetch video data from API
+        const response = await axios.get(`https://apiskeith.top/download/video?url=${urlYt}`);
+        const data = response.data;
+
+        if (!data || !data.status) {
+            return await sock.sendMessage(chatId, { 
+                text: "Failed to fetch video from the API. Please try again later."
+            }, { quoted: fakekontak });
         }
 
-        const video = searchResult;
-        const apiUrl = `https://apiskeith.vercel.app/download/video?url=${encodeURIComponent(video.url)}`;
+        const videoUrl = data.result; // ✅ API returns only the download URL
 
-        let response;
-        try {
-            response = await axios.get(apiUrl, { timeout: 70000 }); // 60s timeout
-        } catch (err) {
-            if (err.message.includes("socket hang up")) {
-                console.warn("Retrying after socket hang up...");
-                response = await axios.get(apiUrl, { timeout: 70000 });
-            } else {
-                throw err;
-            }
-        }
-
-        const apiData = response.data;
-        if (!apiData || !apiData.result) {
-            throw new Error("API failed to fetch video!");
-        }
-
-        // Download reaction
+        // Send as video (playable in chat)
         await sock.sendMessage(chatId, {
-            react: { text: '⬇️', key: message.key }
-        });
-
-        const caption = `*Title:* ${video.title}\n*Duration:* ${video.timestamp}`;
-
-        // Send as normal video
-        await sock.sendMessage(chatId, {
-            video: { url: apiData.result },
-            caption,
-            mimetype: "video/mp4"
-        }, { quoted: message });
-
-        // Send as document
-        await sock.sendMessage(chatId, {
-            document: { url: apiData.result },
+            video: { url: videoUrl },
             mimetype: "video/mp4",
-            fileName: `${video.title.substring(0, 100)}.mp4`,
-            caption
-        }, { quoted: message });
+            fileName: `${title}.mp4`,
+            caption: `🎬 *${title}*`
+        }, { quoted: fakekontak });
 
-        // Success reaction
+        // Send also as document (downloadable file)
         await sock.sendMessage(chatId, {
-            react: { text: '✅', key: message.key }
-        });
+            document: { url: videoUrl },
+            mimetype: "video/mp4",
+            fileName: `${title}.mp4`,
+            caption: `🎬 *${title}*`
+        }, { quoted: fakekontak });
+
 
     } catch (error) {
-        console.error("video command error:", error);
-
-        let errorMessage = `🚫 Error: ${error.message}`;
-        if (error.message.includes("timeout")) {
-            errorMessage = "⏱️ Download timeout! Video might be too large.";
-        } else if (error.message.includes("API failed")) {
-            errorMessage = "🔧 API error! Try again in a few moments.";
-        } else if (error.message.includes("socket hang up")) {
-            errorMessage = "📡 Connection lost! Please retry.";
-        }
-
-        await sock.sendMessage(chatId, {
-            react: { text: '⚠️', key: message.key }
-        });
-
-        return sock.sendMessage(chatId, { text: errorMessage }, { quoted: message });
+        console.error('Error in videoCommand:', error);
+        await sock.sendMessage(chatId, { 
+            text: "Download failed. Please try again later."
+        }, { quoted: fakekontak });
     }
 }
 
