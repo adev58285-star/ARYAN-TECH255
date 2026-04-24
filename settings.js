@@ -1,16 +1,25 @@
+
+/**
+* supreme
+* caspar x
+*/
+
 const settings = {
-  packname: '∆RY∆N-TECH',
-  author: 'aryan‎',
-  botName: "∆RY∆N-TECH",
-  botOwner: 'aryan md', // Your name
-  ownerNumber: '255637518095', //Set your number here without + symbol, just add country code & number without any space
+  packname: '✮⃝𝐒ᵘᵖʳᵉᵐᵉ',
+  author: '✮⃝𝐒ᵘᵖʳᵉᵐᵉ',
+  botName: "𝐉𝐮𝐧𝐞-𝐗 𝐛𝐨𝐭",
+  botOwner: '✮⃝𝐒ᵘᵖʳᵉᵐᵉ', // Your name
+  ownerNumber: process.env.OWNER_NUMBER || '254792021944', //Set your number here without + symbol, just add country code & number without any space
   giphyApiKey: 'qnl7ssQChTdPjsKta2Ax2LMaGXz303tq',
   commandMode: "public",
   maxStoreMessages: 20, 
   storeWriteInterval: 10000,
   description: "This is a bot for managing group commands and automating tasks.",
-  version: "1.0.8",
-  updateZipUrl: "https://github.com/aryankingkilalu/ARYAN-MD/archive/refs/heads/main.zip",
+  version: "2.7.6",
+  updateBranch: 'main',
+  updateZipToken: '',
+  updateZipUrl: "https://github.com/dot-666/x/archive/refs/heads/main.zip",
+  timezone: 'Africa/Nairobi',
 };
 
 module.exports = settings;

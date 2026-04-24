@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+
 global.APIs = {
     xteam: 'https://api.xteam.xyz',
     dzx: 'https://api.dhamzxploit.my.id',
@@ -24,6 +25,7 @@ global.APIKeys = {
 };
 
 module.exports = {
+    SESSION_ID: global.SESSION_ID || process.env.SESSION_ID,
     WARN_COUNT: 3,
     APIs: global.APIs,
     APIKeys: global.APIKeys

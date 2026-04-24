@@ -1,24 +1,29 @@
-node_modules/
-session/
-sessions/
-session.json
-creds.json
-baileys_store.json
-baileys_store_multi.json
-data/messageCount.json
-data/mention.json
-data/owner.json
-data/ownernumber.json
-data/config.db
-message_backup.json
-*.log
-.env
-temp/
-tmp/
-assets/temp/
-attached_assets/
-Database/
-.local/tasks/
-.local/.commit_message
-*.db
-*.db-journal
+﻿ # Dependencies
+ node_modules/
+ package-lock.json
+ 
+ # Runtime data
+ tmp/
+ temp/
+ 
+ # Session files
+ session/
+ 
+
+ # Environment variables
+ .env
+ 
+ # Log files
+ *.log
+ npm-debug.log*
+ yarn-debug.log*
+ yarn-error.log*
+ 
+ # Editor directories and files
+ .idea/
+ .vscode/
+ *.suo
+ *.ntvs*
+ *.njsproj
+ *.sln
+ *.sw?
