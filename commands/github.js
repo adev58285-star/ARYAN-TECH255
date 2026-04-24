@@ -13,7 +13,7 @@ async function githubCommand(sock, chatId, message) {
         const senderPhone = senderJid.split('@')[0];
         const pushname = message.pushName || 'User';
 
-        const res = await fetch('https://api.github.com/repos/vinpink2/June-md');
+        const res = await fetch('https://api.github.com/repos/aryankingkilalu/ARYAN-MD');
         if (!res.ok) throw new Error('Error fetching repository data');
         const json = await res.json();
 
@@ -26,7 +26,7 @@ async function githubCommand(sock, chatId, message) {
         txt += `🔹  *Forks* : ${json.forks_count}\n`;
         txt += `🔹  *Stars* : ${json.stargazers_count}\n`;
         txt += `🔹  *Desc* : ${json.description || 'None'}\n\n`;
-        txt += `Hey👋 @${senderPhone} \n Thank you for choosing June x Bot, fork and Star the repository_`;
+        txt += `Hey👋 @${senderPhone} \n Thank you for CHOOSING, fork and Star the repository_`;
 
         const imgPath = path.join(__dirname, '../assets/images.webp');
         const imgBuffer = fs.readFileSync(imgPath);
