@@ -1,4 +1,4 @@
-# JUNE-X WhatsApp Bot
+# ∆RY∆N-X WhatsApp Bot
 
 ## Overview
 A WhatsApp bot built with Node.js using the Baileys library (@whiskeysockets/baileys). The bot provides various automated commands for WhatsApp groups and individual chats.
@@ -32,7 +32,7 @@ The chatbot uses OpenAI via Replit AI Integrations for multi-media responses:
 - Responds when bot is @mentioned or replied to
 
 ## Environment Variables
-- `SESSION_ID` - WhatsApp session ID (must start with "JUNE-MD:~" prefix followed by base64 session data)
+- `SESSION_ID` - WhatsApp session ID (must start with "Aryan-X:~" prefix followed by base64 session data)
 
 ## Running
 - Development: `node server.js` (serves status page on port 5000, starts bot)
