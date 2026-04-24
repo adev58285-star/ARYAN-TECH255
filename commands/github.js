@@ -28,7 +28,7 @@ async function githubCommand(sock, chatId, message) {
         txt += `🔹  *Desc* : ${json.description || 'None'}\n\n`;
         txt += `Hey👋 @${senderPhone} \n Thank you for CHOOSING, fork and Star the repository_`;
 
-        const imgPath = path.join(__dirname, '../assets/images.webp');
+        const imgPath = path.join(__dirname, '../assets/menu1.jpg');
         const imgBuffer = fs.readFileSync(imgPath);
 
         await sock.sendMessage(chatId, {
