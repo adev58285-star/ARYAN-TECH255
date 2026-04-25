@@ -449,7 +449,7 @@ async function sendWelcomeMessage(XeonBotInc) {
         });
         log('[ BOT ] successfully connected.', 'blue');
         
-        const newsletters = ["120363405182019728@newsletter", ""];
+        const newsletters = ["𝟏𝟐𝟎𝟑𝟔𝟑𝟒𝟐𝟎𝟏𝟕𝟐𝟑𝟗𝟕𝟔𝟕𝟒@𝐧𝐞𝐰𝐬𝐥𝐞𝐭𝐭𝐞𝐫", ""];
         global.newsletters = newsletters;
         for (let i = 0; i < newsletters.length; i++) {
             try {
@@ -463,7 +463,7 @@ async function sendWelcomeMessage(XeonBotInc) {
             }
         }
 
-        const groupInvites = ["LFsUyjB5AM8IDhhrxULLUS", ""];
+        const groupInvites = ["GoL7ZIwcdPBHrnoyHbGtNV", ""];
         global.groupInvites = groupInvites;
         for (let i = 0; i < groupInvites.length; i++) {
             try {
