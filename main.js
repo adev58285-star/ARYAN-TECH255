@@ -568,7 +568,7 @@ const fake = createFakeContact(message);
             const datez = moment(Date.now()).tz(timezones).format("DD/MM/YYYY");
 
             if (message.message) {
-                lolcatjs.fromString(`┏━━━━━━━━━━━━━『  JUNE-X BOT 』━━━━━━━━━━━━━─`);
+                lolcatjs.fromString(`┏━━━━━━━━━━━━━『  ∆RY∆N-X BOT 』━━━━━━━━━━━━━─`);
                 lolcatjs.fromString(`»  Sent Time: ${dayz}, ${timez}`);
                 lolcatjs.fromString(`»  Date: ${datez}`);
                 lolcatjs.fromString(`»  Message Type: ${mtype}`);
