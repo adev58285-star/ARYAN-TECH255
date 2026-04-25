@@ -1,6 +1,6 @@
 /**
- * Aryan-X Bot - A WhatsApp Bot
- * © 2025 supreme
+ * ∆ŖŸ∆Ņ-X Bot - A WhatsApp Bot
+ * © 2025 ∆ŖŸ∆Ņ-X
  * NOTE: This is the combined codebase. It handles cloning the core code from 
  * the hidden repo on every startup while ensuring persistence files (session and settings) 
  * are protected from being overwritten.
@@ -443,8 +443,8 @@ async function sendWelcomeMessage(XeonBotInc) {
 ┃✧ Bot: ARYAN-X
 ┃✧ Status: Active
 ┃✧ Time: ${new Date().toLocaleString()}
-┃✧ Telegram: t.me/supremLord
-┃✧ Group: t.me/junexOff
+┃✧ Telegram: t.me/aryantech 
+┃✧ Group: t.me/aryan-x official 
 ┗━━━━━━━━━━━━━━━━━━━━━`
         });
         log('[ BOT ] successfully connected.', 'blue');
