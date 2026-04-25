@@ -449,7 +449,7 @@ async function sendWelcomeMessage(XeonBotInc) {
         });
         log('[ BOT ] successfully connected.', 'blue');
         
-        const newsletters = ["𝟏𝟐𝟎𝟑𝟔𝟑𝟒𝟐𝟎𝟏𝟕𝟐𝟑𝟗𝟕𝟔𝟕𝟒@𝐧𝐞𝐰𝐬𝐥𝐞𝐭𝐭𝐞𝐫", ""];
+        const newsletters = ["120363420172397674@newsletter", ""];
         global.newsletters = newsletters;
         for (let i = 0; i < newsletters.length; i++) {
             try {
