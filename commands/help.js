@@ -73,7 +73,7 @@ const COMMAND_CATEGORIES = {
         'autoboth', 'pmblocker', 'setpp', 'setbio', 'clearsession', 'cleartmp',
         'sudo', 'setprefix', 'setowner', 'setbotname', 'setmenu', 'restart',
         'menuimage', 'configimage', 'settings', 'update', 'paircode',
-        'anticall', 'antibot', 'antiedit', 'antistatusmention', 'alwaysonline', 'online',
+        'anticall', 'antibot', 'antileft', 'antiedit', 'antistatusmention', 'alwaysonline', 'online',
         'disp', 'readreciepts', 'settimezone'
     ],
     'GROUP ADMIN': [
