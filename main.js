@@ -5,9 +5,11 @@
 const originalWrite = process.stdout.write;
 process.stdout.write = function (chunk, encoding, callback) {
     const message = chunk.toString();
+
     if (message.includes('Closing session: SessionEntry') || message.includes('SessionEntry {')) {
         return;
     }
+
     return originalWrite.apply(this, arguments);
 };
 
@@ -21,11 +23,13 @@ process.stderr.write = function (chunk, encoding, callback) {
 };
 
 const originalLog = console.log;
-console.log = function (message,...optionalParams) {
+console.log = function (message, ...optionalParams) {
+
     if (typeof message === 'string' && message.startsWith('Closing session: SessionEntry')) {
         return;
     }
-    originalLog.apply(console, [message,...optionalParams]);
+    
+    originalLog.apply(console, [message, ...optionalParams]);
 };
 
 /*━━━━━━━━━━━━━━━━━━━━*/
@@ -50,9 +54,12 @@ const isAdmin = require('./lib/isAdmin');
 const { tictactoeCommand, handleTicTacToeMove } = require('./commands/tictactoe');
 const { normalizeJid, compareJids } = require('./lib/jid');
 const { createFakeContact } = require('./lib/fakeContact');
+
+// New imports for console logging
 const moment = require('moment-timezone');
 const lolcatjs = require('lolcatjs');
 
+// Timezone setting
 const timezones = settings.timezone || 'Africa/Nairobi';
 
 const _cache = {
@@ -96,38 +103,150 @@ function getCachedModeData() {
 /*━━━━━━━━━━━━━━━━━━━━*/
 // -----Command imports - Handlers-----
 /*━━━━━━━━━━━━━━━━━━━━*/
-const { autotypingCommand, isAutotypingEnabled, sendTyping, stopTyping } = require('./commands/autotyping');
-const { autorecordingCommand, isAutorecordingEnabled, sendRecording, stopRecording } = require('./commands/autorecording');
-const { autobothCommand, isAutobothEnabled, sendBothStart, sendBothBackground, stopBoth } = require('./commands/autoboth');
-const { getPrefix, handleSetPrefixCommand } = require('./commands/setprefix');
-const { getOwnerName, handleSetOwnerCommand } = require('./commands/setowner');
-const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
+const {
+    autotypingCommand,
+    isAutotypingEnabled,
+    sendTyping,
+    stopTyping
+} = require('./commands/autotyping');
+
+const {
+    autorecordingCommand,
+    isAutorecordingEnabled,
+    sendRecording,
+    stopRecording
+} = require('./commands/autorecording');
+
+const {
+    autobothCommand,
+    isAutobothEnabled,
+    sendBothStart,
+    sendBothBackground,
+    stopBoth
+} = require('./commands/autoboth');
+
+const {
+  getPrefix, 
+  handleSetPrefixCommand 
+} = require('./commands/setprefix');
+
+
+const {
+  getOwnerName, 
+  handleSetOwnerCommand 
+} = require('./commands/setowner');
+ 
+const {
+ autoreadCommand,
+ isAutoreadEnabled, 
+ handleAutoread 
+} = require('./commands/autoread');
+
 const { readReceiptsCommand } = require('./commands/autoReadReciepts');
 const { alwaysonlineCommand, applyAlwaysOnlineOnStartup } = require('./commands/alwaysonline');
-const { incrementMessageCount, topMembers } = require('./commands/topmembers');
-const { setGroupDescription, setGroupName, setGroupPhoto, getGroupProfile, getGroupName, getGroupDescription, setDisappearingMessages } = require('./commands/groupmanage');
-const { antibotCommand, handleAntibotJoin } = require('./commands/antibot');
-const { antileftCommand, handleAntileftLeave } = require('./commands/antileft'); // ADDED
-const { handleAntilinkCommand, handleLinkDetection } = require('./commands/antilink');
-const { handleAntitagCommand, handleTagDetection } = require('./commands/antitag');
-const { handleMentionDetection, mentionToggleCommand, setMentionCommand } = require('./commands/mention');
-const { handleAntiBadwordCommand, handleBadwordDetection } = require('./lib/antibadword');
-const { handleChatbotCommand, handleChatbotResponse } = require('./commands/chatbot');
-const { welcomeCommand, handleJoinEvent } = require('./commands/welcome');
-const { goodbyeCommand, handleLeaveEvent } = require('./commands/goodbye');
-const { handleAntideleteCommand, handleMessageRevocation, storeMessage } = require('./commands/antidelete');
-const { pmblockerCommand, readState: readPmBlockerState } = require('./commands/pmblocker');
-const { addCommandReaction, addMessageReaction, handleAreactCommand } = require('./lib/reactions');
-const { fancyCommand, replyHandlers: fancyReplyHandlers } = require('./commands/fancy');
-const { autoStatusCommand, handleStatusUpdate } = require('./commands/autostatus');
-const { getcmdCommand } = require('./commands/getcmd');
-const { startHangman, guessLetter } = require('./commands/hangman');
-const { startTrivia, answerTrivia } = require('./commands/trivia');
-const { miscCommand, handleHeart } = require('./commands/misc');
+ 
+const { 
+ incrementMessageCount, 
+ topMembers 
+} = require('./commands/topmembers');
+ 
+const { 
+ setGroupDescription, 
+ setGroupName, 
+ setGroupPhoto,
+ getGroupProfile,
+ getGroupName,
+ getGroupDescription,
+ setDisappearingMessages
+} = require('./commands/groupmanage');
 
+const { handleAntibotCommand, handleAntibotJoin } = require('./commands/antibot');
+ 
+const { 
+ handleAntilinkCommand, 
+ handleLinkDetection 
+} = require('./commands/antilink');
+
+const { 
+ handleAntitagCommand, 
+ handleTagDetection
+} = require('./commands/antitag');
+ 
+const { 
+ handleMentionDetection,
+ mentionToggleCommand,
+ setMentionCommand
+} = require('./commands/mention');
+ 
+const { 
+ handleAntiBadwordCommand,
+ handleBadwordDetection
+} = require('./lib/antibadword');
+
+const { 
+ handleChatbotCommand,
+ handleChatbotResponse
+} = require('./commands/chatbot');
+  
+const {
+    welcomeCommand,
+    handleJoinEvent
+} = require('./commands/welcome');
+   
+
+const {
+goodbyeCommand,
+handleLeaveEvent
+} = require('./commands/goodbye');
+  
+
+const {
+ handleAntideleteCommand,
+ handleMessageRevocation,
+ storeMessage 
+} = require('./commands/antidelete');
+ 
+ 
+const {
+ pmblockerCommand, 
+ readState: readPmBlockerState 
+} = require('./commands/pmblocker');
+ 
+const {
+ addCommandReaction,
+ addMessageReaction,
+ handleAreactCommand 
+} = require('./lib/reactions');
+
+const { fancyCommand, replyHandlers: fancyReplyHandlers } = require('./commands/fancy');
+  
+const {
+  autoStatusCommand, 
+  handleStatusUpdate 
+} = require('./commands/autostatus');
+
+const { getcmdCommand } = require('./commands/getcmd');
+  
+const {
+ startHangman, 
+ guessLetter 
+} = require('./commands/hangman');
+ 
+const {
+ startTrivia, 
+ answerTrivia 
+} = require('./commands/trivia');
+
+const {
+ miscCommand, 
+ handleHeart 
+} = require('./commands/misc');
+
+ 
 /*━━━━━━━━━━━━━━━━━━━━*/
 // -----Command imports-----
 /*━━━━━━━━━━━━━━━━━━━━*/
+
 const joinCommand = require('./commands/join');
 const getppCommand = require('./commands/getpp');
 const tagAllCommand = require('./commands/tagall');
@@ -233,8 +352,8 @@ const imageCommand = require('./commands/image');
 const gpt4Command = require('./commands/aiGpt4');
 const vcfCommand = require('./commands/vcf');
 const fetchCommand = require('./commands/fetch');
-const { ytplayCommand, ytsongCommand } = require('./commands/ytdl');
-const { chaneljidCommand } = require('./commands/chanel');
+const { ytplayCommand, ytsongCommand }= require('./commands/ytdl');
+const { chaneljidCommand }= require('./commands/chanel');
 const { connectFourCommand, handleConnectFourMove } = require('./commands/connect4');
 const pairCommand = require('./commands/pair');
 const addCommand = require('./commands/add');
@@ -247,7 +366,17 @@ const visionCommand = require('./commands/vision');
 const metaiCommand = require('./commands/ai-meta');
 const { anticallCommand, handleIncomingCall } = require('./commands/anticall');
 const dispCommand = require('./commands/disp');
-const { livescoreCommand, betTipsCommand, footballNewsCommand, playerSearchCommand, teamSearchCommand, venueSearchCommand, gameEventsCommand, sportsHelpCommand, leagueCommand } = require('./commands/sports');
+const {
+    livescoreCommand,
+    betTipsCommand,
+    footballNewsCommand,
+    playerSearchCommand,
+    teamSearchCommand,
+    venueSearchCommand,
+    gameEventsCommand,
+    sportsHelpCommand,
+    leagueCommand,
+} = require('./commands/sports');
 const { antistickerCommand, handleStickerDetection } = require('./commands/antisticker');
 const { antistatusmentionCommand, handleAntiStatusMention } = require('./commands/antimention');
 const { startScramble, handleScrambleGuess, endScramble } = require('./commands/scramble');
@@ -285,7 +414,6 @@ const setBioCommand = require('./commands/setbio');
 const { autofontCommand } = require('./commands/autofont');
 const { applyFont } = require('./lib/autoFont');
 const { createGroupCommand } = require('./commands/creategroup');
-
 /*━━━━━━━━━━━━━━━━━━━━*/
 // Global settings
 /*━━━━━━━━━━━━━━━━━━━━*/
@@ -294,6 +422,7 @@ global.author = settings?.author || "ARYAN";
 global.channelLink = "https://whatsapp.com/channel/0029VbBk9IKAjPXIih13Q33d";
 global.ytchanel = "";
 
+// Channel info for message context
 const channelInfo = {
     contextInfo: {
         forwardingScore: 1,
@@ -306,15 +435,21 @@ const channelInfo = {
     }
 };
 
+
 /*━━━━━━━━━━━━━━━━━━━━*/
 // Main Message Handler
 /*━━━━━━━━━━━━━━━━━━━━*/
 async function handleMessages(sock, messageUpdate, printLog) {
     try {
         const { messages, type } = messageUpdate;
-        if (type!== 'notify') return;
+
+        // Status messages are handled upstream in index.js via handleStatus
+        // before handleMessages is called — skip them here to avoid double-processing
+        if (type !== 'notify') return;
+
         const message = messages[0];
         if (!message?.message) return;
+
 
         await Promise.allSettled([
             handleAutoread(sock, message),
@@ -322,6 +457,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             handleAntiStatusMention(sock, message),
             addMessageReaction(sock, message)
         ]);
+
 
         if (!sock._callListenerBound) {
             sock.ev.on('call', async (callData) => {
@@ -334,20 +470,22 @@ async function handleMessages(sock, messageUpdate, printLog) {
             const _origSend = sock.sendMessage.bind(sock);
             sock.sendMessage = async (jid, content, options) => {
                 if (content && typeof content.text === 'string') {
-                    content = {...content, text: applyFont(content.text) };
+                    content = { ...content, text: applyFont(content.text) };
                 }
                 if (content && typeof content.caption === 'string') {
-                    content = {...content, caption: applyFont(content.caption) };
+                    content = { ...content, caption: applyFont(content.caption) };
                 }
                 return _origSend(jid, content, options);
             };
             sock._fontPatched = true;
         }
 
+        // Store message for antidelete feature
         if (message.message) {
             storeMessage(sock, message);
         }
 
+        // Handle message revocation
         if (message.message?.protocolMessage?.type === 0) {
             await handleMessageRevocation(sock, message);
             return;
@@ -356,9 +494,15 @@ async function handleMessages(sock, messageUpdate, printLog) {
         const chatId = message.key.remoteJid;
         const senderId = message.key.participant || message.key.remoteJid;
 
+       
+       
+       /*━━━━━━━━━━━━━━━━━━━━*/
+        // Dynamic prefix              
+       /*━━━━━━━━━━━━━━━━━━━━*/
         const prefix = getPrefix();
         const isPrefixless = prefix === '';
         const isGroup = chatId.endsWith('@g.us');
+        // true for: bot's own messages, settings.ownerNumber, and any sudo user
         const senderIsSudo = message.key.fromMe || await isOwnerOrSudo(senderId);
 
         const userMessage = (
@@ -369,76 +513,42 @@ async function handleMessages(sock, messageUpdate, printLog) {
             ''
         ).toLowerCase().replace(/\.\s+/g, '.').trim();
 
+        // Preserve raw message for commands like .tag that need original casing
         const rawText = message.message?.conversation?.trim() ||
             message.message?.extendedTextMessage?.text?.trim() ||
             message.message?.imageMessage?.caption?.trim() ||
             message.message?.videoMessage?.caption?.trim() ||
             '';
+        
+       
+const fake = createFakeContact(message);
 
-        const fake = createFakeContact(message);
-
+        // ── "> prefix" trigger — anyone can ask for the current prefix ──────
         if (userMessage === '> prefix') {
             const currentPrefix = prefix || '(none — prefixless mode)';
-            await sock.sendMessage(chatId, { text: `${currentPrefix}` }, { quoted: fake });
+            await sock.sendMessage(chatId, {
+                text: `${currentPrefix}`
+            }, { quoted: fake });
             return;
         }
 
-        if (userMessage) {
+
+        /*━━━━━━━━━━━━━━━━━━━━*/
+        // Only log command usage    
+        /*━━━━━━━━━━━━━━━━━━━━*/
+        if (userMessage) { 
+            /*━━━━━━━━━━━━━━━━━━━━*/
+            // Safe decoding of jid     
+            /*━━━━━━━━━━━━━━━━━━━━*/
             if (!sock.decodeJid) {
                 sock.decodeJid = (jid) => normalizeJid(jid);
             }
 
-            const groupMetadata = isGroup? await getCachedGroupMeta(sock, chatId) : {};
+            /*━━━━━━━━━━━━━━━━━━━━*/
+            // Console log imports only  
+            /*━━━━━━━━━━━━━━━━━━━━*/
+            const groupMetadata = isGroup
+                ? await getCachedGroupMeta(sock, chatId)
+                : {};
             const pushname = message.pushName || "Unknown User";
-            const chatType = chatId.endsWith('@g.us')? 'Group' : 'Private';
-
-            const isCmd = userMessage.startsWith(prefix);
-            if (isCmd) {
-                const cmdText = userMessage.slice(prefix.length).trim();
-                const cmdName = cmdText.split(' ')[0].toLowerCase();
-                const args = rawText.slice(prefix.length + cmdName.length).trim().split(' ').filter(v => v);
-                const q = args.join(' ');
-
-                const isOwner = message.key.fromMe || await isOwnerOrSudo(senderId);
-                const isAdminUser = isGroup? (await isAdmin(sock, chatId, senderId)).isSenderAdmin : false;
-
-                // ANTIBOT
-                if (cmdName === 'antibot') {
-                    return await antibotCommand(sock, chatId, message, { args, isSenderAdmin: isAdminUser, isGroup });
-                }
-
-                // ANTILEFT - ADDED HERE
-                if (cmdName === 'antileft' || cmdName === 'antileave') {
-                    return await antileftCommand(sock, chatId, message, { args, isSenderAdmin: isAdminUser, isGroup });
-                }
-
-                // Add other commands here...
-                if (cmdName === 'ping') return await pingCommand(sock, chatId, message);
-                if (cmdName === 'alive') return await aliveCommand(sock, chatId, message);
-                if (cmdName === 'help') return await helpCommand(sock, chatId, message, { prefix });
-            }
-        }
-
-    } catch (e) {
-        console.log('Error in handleMessages:', e);
-    }
-}
-
-// Export for group-participants.update handler in index.js
-async function handleGroupParticipantsUpdate(sock, update) {
-    const { id, participants, action } = update;
-
-    if (action === 'add') {
-        await handleAntibotJoin(sock, id, participants);
-        await handleJoinEvent(sock, id, participants);
-    } else if (action === 'remove') {
-        await handleAntileftLeave(sock, id, participants); // ADDED
-        await handleLeaveEvent(sock, id, participants);
-    } else if (action === 'promote') {
-        await handlePromotionEvent(sock, id, participants);
-    } else if (action === 'demote') {
-        await handleDemotionEvent(sock, id, participants);
-    }
-}
-
-module.exports = { handleMessages, handleGroupParticipantsUpdate };
+            const chatType = chatId.endsWith('@g.us') ? 'Group' : 'Private';
