@@ -7,7 +7,7 @@
 const settings = {
   packname: '✮⃝aryan X',
   author: '✮⃝aryan X',
-  botName: "Aryan-Bot",
+  botName: "∆RY∆N-X BOT",
   botOwner: '✮⃝aryan x', // Your name
   ownerNumber: process.env.OWNER_NUMBER || '255637518095', //Set your number here without + symbol, just add country code & number without any space
   giphyApiKey: 'qnl7ssQChTdPjsKta2Ax2LMaGXz303tq',
@@ -19,7 +19,7 @@ const settings = {
   updateBranch: 'main',
   updateZipToken: '',
   updateZipUrl: "https://github.com/adev58285-star/ARYAN-TECH255/archive/refs/heads/main.zip",
-  timezone: 'Africa/Nairobi',
+  timezone: 'Africa/dar es salaam',
 };
 
 module.exports = settings;
