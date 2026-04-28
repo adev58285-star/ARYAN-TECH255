@@ -19,7 +19,7 @@ const settings = {
   updateBranch: 'main',
   updateZipToken: '',
   updateZipUrl: "https://github.com/adev58285-star/ARYAN-TECH255/archive/refs/heads/main.zip",
-  timezone: 'Africa/dar es salaam',
+  timezone: 'Africa/nairobi',
 };
 
 module.exports = settings;
