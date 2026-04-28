@@ -407,7 +407,7 @@ async function sendWelcomeMessage(XeonBotInc) {
   if (process.env.DYNO) return "☁️ Heroku";
   if (process.env.RENDER) return "⚡ Render";
   if (process.env.PREFIX && process.env.PREFIX.includes("termux")) return "📱 Termux";
-  if (process.env.PORTS && process.env.CYPHERX_HOST_ID) return "🌀 CypherX Platform";
+  if (process.env.PORTS && process.env.ARYAN_HOST_ID) return "🌀 ARYAN X Platform";
   if (process.env.P_SERVER_UUID) return "🖥️ Panel";
   if (process.env.LXC) return "📦 Linux Container (LXC)";
   
