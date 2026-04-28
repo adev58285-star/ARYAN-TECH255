@@ -420,7 +420,7 @@ const { createGroupCommand } = require('./commands/creategroup');
 global.packname = settings?.packname || "ARYAN X";
 global.author = settings?.author || "Eddy";
 global.channelLink = "https://whatsapp.com/channel/0029VbBk9IKAjPXIih13Q33d";
-global.ytchanel = "";120363420172397674@newsletter
+global.ytchanel = "";
 
 // Channel info for message context
 const channelInfo = {
