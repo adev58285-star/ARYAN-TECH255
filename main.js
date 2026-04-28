@@ -417,9 +417,9 @@ const { createGroupCommand } = require('./commands/creategroup');
 /*━━━━━━━━━━━━━━━━━━━━*/
 // Global settings
 /*━━━━━━━━━━━━━━━━━━━━*/
-global.packname = settings?.packname || "JUNE X";
-global.author = settings?.author || "Vinpink2";
-global.channelLink = "https://whatsapp.com/channel/0029Va90zAnIHphOuO8Msp3A";
+global.packname = settings?.packname || "ARYAN X";
+global.author = settings?.author || "Eddy";
+global.channelLink = "https://whatsapp.com/channel/0029VbBk9IKAjPXIih13Q33d";
 global.ytchanel = "";
 
 // Channel info for message context
@@ -428,8 +428,8 @@ const channelInfo = {
         forwardingScore: 1,
         isForwarded: true,
         forwardedNewsletterMessageInfo: {
-            newsletterJid: '120363423767541304@newsletter',
-            newsletterName: 'June Official',
+            newsletterJid: '120363420172397674@newsletter',
+            newsletterName: 'Aryan Official',
             serverMessageId: -1
         }
     }
