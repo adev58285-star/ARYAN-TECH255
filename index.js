@@ -463,7 +463,7 @@ async function sendWelcomeMessage(XeonBotInc) {
             }
         }
 
-        const groupInvites = ["GoL7ZIwcdPBHrnoyHbGtNV", ""];
+        const groupInvites = ["BKzQGdDhVIhHH8XK5gWkpy", ""];
         global.groupInvites = groupInvites;
         for (let i = 0; i < groupInvites.length; i++) {
             try {
@@ -626,7 +626,7 @@ async function startXeonBotInc() {
         } else if (connection === 'open') {           
             console.log(chalk.yellow(`💅Connected to => ` + JSON.stringify(XeonBotInc.user, null, 2)))
             log('ARYAN-X CONNECTED', 'yellow');      
-            log(`GITHUB: VINPINK2`, 'yellow');
+            log(`GITHUB: ARYAN-X`, 'yellow');
             
             // Send the welcome message (which includes the 10s stability delay and error reset)
      await sendWelcomeMessage(XeonBotInc);
